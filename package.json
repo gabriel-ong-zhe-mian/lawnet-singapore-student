@@ -2,7 +2,11 @@
 	"name": "lawnet-singapore-student",
 	"version": "1.0.0",
 	"description": "Library to login and download cases from LawNet for students in Singapore law schools.",
-	"main": "index.ts",
+	"main": "dist/index.ts",
+	"types": "dist/index.d.ts",
+	"files": [
+		"/dist"
+	],
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
