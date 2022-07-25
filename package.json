@@ -1,0 +1,20 @@
+{
+  "name": "lawnet-singapore-student",
+  "version": "1.0.0",
+  "description": "Library to login and download cases from LawNet for students in Singapore law schools.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/customautosys/lawnet-singapore-student.git"
+  },
+  "keywords": [
+    "LawNet",
+    "Singapore",
+    "Student"
+  ],
+  "author": "Wilson Foo Yu Kang <wilson.foo@customautosys.com>",
+  "license": "MPL-2.0"
+}
