@@ -6,6 +6,10 @@ export let corsPrefix='';
 export const FIRST_URL={
 	SMU:'https://www-lawnet-sg.libproxy.smu.edu.sg'
 };
+const SMU_LIBPROXY_URL='https://login.libproxy.smu.edu.sg/login?auth=shibboleth&url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access';
+const SMU_ADFS_LOGIN_PAGE='https://login.smu.edu.sg/adfs/ls/';
+const SMU_SHIBBOLETH_SSO_URL='https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
+
 const DUPLICATE_LOGIN_REMOVE_URL='/lawnet/group/lawnet/duplicate-login?p_p_id=lawnetuniquelogin_WAR_lawnet3portalportlet&p_p_lifecycle=1&p_p_state=normal&p_p_mode=view&p_p_col_id=column-2&p_p_col_count=1&_lawnetuniquelogin_WAR_lawnet3portalportlet_loginType=old&_lawnetuniquelogin_WAR_lawnet3portalportlet_javax.portlet.action=removeOldLogin';
 const LOGOUT_REDIRECT_SCRIPT='<script type="text/javascript">location.href="\\x2flawnet\\x2fweb\\x2flawnet\\x2fhome";</script>';
 const LOGOUT_REDIRECT_SCRIPT_2='<script type="text/javascript">location.href="\\x2flawnet\\x2fc";</script>';
@@ -18,7 +22,7 @@ async function loginSMU(
 	localAxios?:AxiosInstance
 ){
 	let libproxyPage=await localAxios.get<Document>(
-		'https://login.libproxy.smu.edu.sg/login?auth=shibboleth&url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access',
+		SMU_LIBPROXY_URL,
 		{responseType:'document'}
 	);
 	let samlRequest=libproxyPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
@@ -31,7 +35,7 @@ async function loginSMU(
 	params.append('Password',password);
 	params.append('AuthMethod','FormsAuthentication');
 	let adfsLoginPage=await localAxios.post<Document>(
-		'https://login.smu.edu.sg/adfs/ls/',
+		SMU_ADFS_LOGIN_PAGE,
 		params,
 		{responseType:'document'}
 	);
@@ -42,7 +46,7 @@ async function loginSMU(
 	params.append('SAMLResponse',samlResponse);
 	params.append('RelayState',relayState);
 	let basicSearchRedirect=await localAxios.post<Document>(
-		'https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST',
+		SMU_SHIBBOLETH_SSO_URL,
 		params,
 		{responseType:'document'}
 	);
@@ -93,12 +97,12 @@ export async function login(params:{
 	password:string,
 	localAxios?:AxiosInstance
 }):Promise<AxiosInstance>{
-	if(corsPrefix&&!corsPrefix.endsWith('/'))corsPrefix+='/';
+	if(corsPrefix.trim()&&!corsPrefix.endsWith('/'))corsPrefix+='/';
 	return await loginFunctions[params.school](
 		params.username,
 		params.password,
 		params.localAxios??axios.create({
-			baseURL:corsPrefix+FIRST_URL,
+			baseURL:corsPrefix+FIRST_URL[params.school],
 			withCredentials:true,
 			responseType:'text'
 		})

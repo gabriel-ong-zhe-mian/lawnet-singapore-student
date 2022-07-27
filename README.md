@@ -1,6 +1,6 @@
 # lawnet-singapore-student
 
-Library to login and download cases from LawNet for students in Singapore law schools.
+Library to login and logout from LawNet for students in Singapore law schools, and containing the URL prefix for each school from which other LawNet URLs may be accessed to retrieve cases.
 
 Initial support for Singapore Management University and National University of Singapore. Support for Singapore University of Social Sciences is planned.
 
@@ -27,22 +27,31 @@ login(params:{
 Logs in to LawNet. If localAxios is null, a new Axios instance is created. The Axios instance should be retained for use with the downloadCitation method.
 
 ```typescript
-downloadCitation(params:{
-	citation:string,
-	format:'html'|'pdf',
-	localAxios:AxiosInstance
-}):Promise<Blob>
-```
-
-Downloads a citation in either HTML or PDF format. If PDF format is chosen and no PDF is available, an error is thrown.
-
-```typescript
 logout(params:{
+	school:'SMU'|'NUS'|'SUSS'
 	localAxios:AxiosInstance
 }):Promise<void>
 ```
 
 Logs out of LawNet.
+
+## Fields
+
+```typescript
+corsPrefix:string
+```
+
+URL to a Cross-Origin Resource Sharing proxy.
+
+```typescript
+FIRST_URL:{
+	SMU:string,
+	NUS:string,
+	SUSS:string
+}
+```
+
+The first or base URL for each school's access to LawNet.
 
 ## Importing
 
@@ -50,8 +59,9 @@ Logs out of LawNet.
 import * as LawnetSingaporeStudent from 'lawnet-singapore-student';
 import LawnetSingaporeStudent from 'lawnet-singapore-student'; //default import is the same
 import{
+	corsPrefix,
+	FIRST_URL,
 	login,
-	downloadCitation,
 	logout
 }from 'lawnet-singapore-student';
 ```
