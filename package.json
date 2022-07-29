@@ -2,7 +2,7 @@
 	"name": "lawnet-singapore-student",
 	"version": "1.0.0",
 	"description": "Library to login and download cases from LawNet for students in Singapore law schools.",
-	"main": "dist/index.ts",
+	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": [
 		"/dist"
@@ -23,5 +23,8 @@
 	"license": "MPL-2.0",
 	"dependencies": {
 		"axios": "^0.27.2"
+	},
+	"devDependencies": {
+		"typescript": "^4.7.4"
 	}
 }
