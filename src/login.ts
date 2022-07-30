@@ -103,7 +103,7 @@ async function loginNUS(
 		{responseType:'document'}
 	);
 	if(loginFormPage?.data?.documentElement?.outerHTML?.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+NUS_HELPDESK_URL+'\',\'_system\');">contact the NUS Helpdesk</a>.');
-	let loginFormAction=loginFormPage?.data?.querySelector('form[@action]')?.getAttribute('action');
+	let loginFormAction=loginFormPage?.data?.querySelector('form[action]')?.getAttribute('action');
 	if(!loginFormAction)throw new Error(loginFormPage?.data?.body?.innerHTML??'Error retrieving NUS login form');
 	let basicSearchRedirect=await localAxios.post<Document>(
 		loginFormAction,

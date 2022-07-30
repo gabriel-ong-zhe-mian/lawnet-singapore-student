@@ -96,7 +96,7 @@ function loginNUS(username, password, domain, localAxios) {
         let loginFormPage = yield localAxios.post(NUS_LOGIN_FORM_URL, params, { responseType: 'document' });
         if ((_d = (_c = (_b = loginFormPage === null || loginFormPage === void 0 ? void 0 : loginFormPage.data) === null || _b === void 0 ? void 0 : _b.documentElement) === null || _c === void 0 ? void 0 : _c.outerHTML) === null || _d === void 0 ? void 0 : _d.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD))
             throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
-        let loginFormAction = (_f = (_e = loginFormPage === null || loginFormPage === void 0 ? void 0 : loginFormPage.data) === null || _e === void 0 ? void 0 : _e.querySelector('form[@action]')) === null || _f === void 0 ? void 0 : _f.getAttribute('action');
+        let loginFormAction = (_f = (_e = loginFormPage === null || loginFormPage === void 0 ? void 0 : loginFormPage.data) === null || _e === void 0 ? void 0 : _e.querySelector('form[action]')) === null || _f === void 0 ? void 0 : _f.getAttribute('action');
         if (!loginFormAction)
             throw new Error((_j = (_h = (_g = loginFormPage === null || loginFormPage === void 0 ? void 0 : loginFormPage.data) === null || _g === void 0 ? void 0 : _g.body) === null || _h === void 0 ? void 0 : _h.innerHTML) !== null && _j !== void 0 ? _j : 'Error retrieving NUS login form');
         let basicSearchRedirect = yield localAxios.post(loginFormAction, params, { responseType: 'document' });
