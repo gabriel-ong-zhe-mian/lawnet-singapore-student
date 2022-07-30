@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.FIRST_URL = exports.corsPrefix = void 0;
+exports.login = exports.LOGOUT_REDIRECT_URL_2 = exports.LOGOUT_REDIRECT_URL = exports.LOGOUT_REDIRECT_SCRIPT_2 = exports.LOGOUT_REDIRECT_SCRIPT = exports.FIRST_URL = exports.corsPrefix = void 0;
 const axios_1 = __importDefault(require("axios"));
 exports.corsPrefix = '';
 exports.FIRST_URL = {
@@ -31,10 +31,10 @@ const NUS_INCORRECT_USER_ID_OR_PASSWORD = 'We are unable to authenticate the Use
 const NUS_HELPDESK_URL = 'http://www.nus.edu.sg/comcen/gethelp';
 const DUPLICATE_LOGIN = '<div>Multiple logins with the same User ID are not allowed.</div> <div>To terminate the earlier session, please click on the Remove Button.</div> <div><br><br></div> <div>Sharing of User ID is prohibited. Legal action will be taken if access is unauthorised.</div>';
 const DUPLICATE_LOGIN_REMOVE_URL = '/lawnet/group/lawnet/duplicate-login?p_p_id=lawnetuniquelogin_WAR_lawnet3portalportlet&p_p_lifecycle=1&p_p_state=normal&p_p_mode=view&p_p_col_id=column-2&p_p_col_count=1&_lawnetuniquelogin_WAR_lawnet3portalportlet_loginType=old&_lawnetuniquelogin_WAR_lawnet3portalportlet_javax.portlet.action=removeOldLogin';
-const LOGOUT_REDIRECT_SCRIPT = '<script type="text/javascript">location.href="\\x2flawnet\\x2fweb\\x2flawnet\\x2fhome";</script>';
-const LOGOUT_REDIRECT_SCRIPT_2 = '<script type="text/javascript">location.href="\\x2flawnet\\x2fc";</script>';
-const LOGOUT_REDIRECT_URL = '/lawnet/web/lawnet/home';
-const LOGOUT_REDIRECT_URL_2 = '/lawnet/c';
+exports.LOGOUT_REDIRECT_SCRIPT = '<script type="text/javascript">location.href="\\x2flawnet\\x2fweb\\x2flawnet\\x2fhome";</script>';
+exports.LOGOUT_REDIRECT_SCRIPT_2 = '<script type="text/javascript">location.href="\\x2flawnet\\x2fc";</script>';
+exports.LOGOUT_REDIRECT_URL = '/lawnet/web/lawnet/home';
+exports.LOGOUT_REDIRECT_URL_2 = '/lawnet/c';
 function loginSMU(username, password, domain, localAxios) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
     return __awaiter(this, void 0, void 0, function* () {
@@ -64,12 +64,12 @@ function loginSMU(username, password, domain, localAxios) {
         if ((_s = (_r = (_q = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _q === void 0 ? void 0 : _q.documentElement) === null || _r === void 0 ? void 0 : _r.outerHTML) === null || _s === void 0 ? void 0 : _s.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + DUPLICATE_LOGIN_REMOVE_URL);
             for (;;) {
-                if ((_v = (_u = (_t = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _t === void 0 ? void 0 : _t.documentElement) === null || _u === void 0 ? void 0 : _u.outerHTML) === null || _v === void 0 ? void 0 : _v.includes(LOGOUT_REDIRECT_SCRIPT)) {
-                    basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + LOGOUT_REDIRECT_URL);
+                if ((_v = (_u = (_t = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _t === void 0 ? void 0 : _t.documentElement) === null || _u === void 0 ? void 0 : _u.outerHTML) === null || _v === void 0 ? void 0 : _v.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
+                    basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL);
                     continue;
                 }
-                if ((_y = (_x = (_w = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _w === void 0 ? void 0 : _w.documentElement) === null || _x === void 0 ? void 0 : _x.outerHTML) === null || _y === void 0 ? void 0 : _y.includes(LOGOUT_REDIRECT_SCRIPT_2)) {
-                    basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + LOGOUT_REDIRECT_URL_2);
+                if ((_y = (_x = (_w = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _w === void 0 ? void 0 : _w.documentElement) === null || _x === void 0 ? void 0 : _x.outerHTML) === null || _y === void 0 ? void 0 : _y.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
+                    basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL_2);
                     continue;
                 }
                 break;
@@ -103,12 +103,12 @@ function loginNUS(username, password, domain, localAxios) {
         if ((_m = (_l = (_k = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _k === void 0 ? void 0 : _k.documentElement) === null || _l === void 0 ? void 0 : _l.innerHTML) === null || _m === void 0 ? void 0 : _m.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.NUS + DUPLICATE_LOGIN_REMOVE_URL);
             for (;;) {
-                if ((_q = (_p = (_o = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _o === void 0 ? void 0 : _o.documentElement) === null || _p === void 0 ? void 0 : _p.outerHTML) === null || _q === void 0 ? void 0 : _q.includes(LOGOUT_REDIRECT_SCRIPT)) {
-                    basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.NUS + LOGOUT_REDIRECT_URL);
+                if ((_q = (_p = (_o = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _o === void 0 ? void 0 : _o.documentElement) === null || _p === void 0 ? void 0 : _p.outerHTML) === null || _q === void 0 ? void 0 : _q.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
+                    basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.NUS + exports.LOGOUT_REDIRECT_URL);
                     continue;
                 }
-                if ((_t = (_s = (_r = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _r === void 0 ? void 0 : _r.documentElement) === null || _s === void 0 ? void 0 : _s.outerHTML) === null || _t === void 0 ? void 0 : _t.includes(LOGOUT_REDIRECT_SCRIPT_2)) {
-                    basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.NUS + LOGOUT_REDIRECT_URL_2);
+                if ((_t = (_s = (_r = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _r === void 0 ? void 0 : _r.documentElement) === null || _s === void 0 ? void 0 : _s.outerHTML) === null || _t === void 0 ? void 0 : _t.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
+                    basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.NUS + exports.LOGOUT_REDIRECT_URL_2);
                     continue;
                 }
                 break;

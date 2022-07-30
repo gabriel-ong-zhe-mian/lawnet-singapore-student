@@ -21,10 +21,10 @@ const NUS_HELPDESK_URL='http://www.nus.edu.sg/comcen/gethelp';
 
 const DUPLICATE_LOGIN='<div>Multiple logins with the same User ID are not allowed.</div> <div>To terminate the earlier session, please click on the Remove Button.</div> <div><br><br></div> <div>Sharing of User ID is prohibited. Legal action will be taken if access is unauthorised.</div>';
 const DUPLICATE_LOGIN_REMOVE_URL='/lawnet/group/lawnet/duplicate-login?p_p_id=lawnetuniquelogin_WAR_lawnet3portalportlet&p_p_lifecycle=1&p_p_state=normal&p_p_mode=view&p_p_col_id=column-2&p_p_col_count=1&_lawnetuniquelogin_WAR_lawnet3portalportlet_loginType=old&_lawnetuniquelogin_WAR_lawnet3portalportlet_javax.portlet.action=removeOldLogin';
-const LOGOUT_REDIRECT_SCRIPT='<script type="text/javascript">location.href="\\x2flawnet\\x2fweb\\x2flawnet\\x2fhome";</script>';
-const LOGOUT_REDIRECT_SCRIPT_2='<script type="text/javascript">location.href="\\x2flawnet\\x2fc";</script>';
-const LOGOUT_REDIRECT_URL='/lawnet/web/lawnet/home';
-const LOGOUT_REDIRECT_URL_2='/lawnet/c';
+export const LOGOUT_REDIRECT_SCRIPT='<script type="text/javascript">location.href="\\x2flawnet\\x2fweb\\x2flawnet\\x2fhome";</script>';
+export const LOGOUT_REDIRECT_SCRIPT_2='<script type="text/javascript">location.href="\\x2flawnet\\x2fc";</script>';
+export const LOGOUT_REDIRECT_URL='/lawnet/web/lawnet/home';
+export const LOGOUT_REDIRECT_URL_2='/lawnet/c';
 
 async function loginSMU(
 	username:string,
