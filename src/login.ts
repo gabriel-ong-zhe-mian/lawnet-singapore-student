@@ -7,8 +7,9 @@ export const FIRST_URL={
 	SMU:'https://www-lawnet-sg.libproxy.smu.edu.sg',
 	NUS:'https://www-lawnet-sg.lawproxy1.nus.edu.sg'
 };
-const SMU_LIBPROXY_URL='https://login.libproxy.smu.edu.sg/login?auth=shibboleth&url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access';
-const SMU_ADFS_LOGIN_PAGE='https://login.smu.edu.sg/adfs/ls/';
+const SMU_LIBPROXY_URL='http://libproxy.smu.edu.sg/login?url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access';
+const SMU_ADFS_LOGIN_PAGE='https://login2.smu.edu.sg/adfs/ls/';
+const SMU_ADFS_LOGIN_PAGE_ROOT='https://login2.smu.edu.sg';
 const SMU_SHIBBOLETH_SSO_URL='https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
 const SMU_INCORRECT_USER_ID_OR_PASSWORD='Incorrect user ID or password. Type the correct user ID and password, and try again.';
 const SMU_RESET_PASSWORD_URL='https://smu.sg/password';
@@ -42,18 +43,25 @@ async function loginSMU(
 	let params=new URLSearchParams();
 	params.append('SAMLRequest',samlRequest);
 	params.append('RelayState',relayState);
-	params.append('UserName',username);
-	params.append('Password',password);
-	params.append('AuthMethod','FormsAuthentication');
-	let adfsLoginPage=await localAxios.post<Document>(
+	params.append('back','2');
+	let adfsLoginPage1=await localAxios.post<Document>(
 		SMU_ADFS_LOGIN_PAGE,
 		params,
 		{responseType:'document'}
 	);
-	if(adfsLoginPage?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+SMU_RESET_PASSWORD_URL+'\',\'_system\');">reset your password</a>.');;
-	let samlResponse=adfsLoginPage?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
-	relayState=adfsLoginPage?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
-	if(!samlResponse||!relayState)throw new Error(adfsLoginPage?.data?.body?.innerHTML??'No SAML Response or Relay State');
+	let adfsLoginPageUrl2=SMU_ADFS_LOGIN_PAGE_ROOT+adfsLoginPage1?.data?.querySelector('form#loginForm')?.getAttribute('action');
+	params.append('UserName',username);
+	params.append('Password',password);
+	params.append('AuthMethod','FormsAuthentication');
+	let adfsLoginPage2=await localAxios.post<Document>(
+		adfsLoginPageUrl2,
+		params,
+		{responseType:'document'}
+	);
+	if(adfsLoginPage2?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+SMU_RESET_PASSWORD_URL+'\',\'_system\');">reset your password</a>.');;
+	let samlResponse=adfsLoginPage2?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+	relayState=adfsLoginPage2?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
+	if(!samlResponse||!relayState)throw new Error(adfsLoginPage2?.data?.body?.innerHTML??'No SAML Response or Relay State');
 	params=new URLSearchParams();
 	params.append('SAMLResponse',samlResponse);
 	params.append('RelayState',relayState);
