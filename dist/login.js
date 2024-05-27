@@ -22,7 +22,7 @@ exports.FIRST_URL = {
 const SMU_LIBPROXY_URL = 'http://libproxy.smu.edu.sg/login?url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access';
 const SMU_ADFS_LOGIN_PAGE = 'https://login2.smu.edu.sg/adfs/ls/';
 const SMU_ADFS_LOGIN_PAGE_ROOT = 'https://login2.smu.edu.sg';
-const SMU_SHIBBOLETH_SSO_URL = 'https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
+const SMU_SHIBBOLETH_SSO_URL = 'https://login.libproxy.smu.edu.sg:443/Shibboleth.sso/SAML2/POST';
 const SMU_INCORRECT_USER_ID_OR_PASSWORD = 'Incorrect user ID or password. Type the correct user ID and password, and try again.';
 const SMU_RESET_PASSWORD_URL = 'https://smu.sg/password';
 const NUS_LAWPROXY_URL = 'https://www-lawnet-sg.lawproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
