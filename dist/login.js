@@ -19,8 +19,9 @@ exports.FIRST_URL = {
     SMU: 'https://www-lawnet-sg.libproxy.smu.edu.sg',
     NUS: 'https://www-lawnet-sg.lawproxy1.nus.edu.sg'
 };
-const SMU_LIBPROXY_URL = 'https://login.libproxy.smu.edu.sg/login?auth=shibboleth&url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access';
-const SMU_ADFS_LOGIN_PAGE = 'https://login.smu.edu.sg/adfs/ls/';
+const SMU_LIBPROXY_URL = 'http://libproxy.smu.edu.sg/login?url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access';
+const SMU_ADFS_LOGIN_PAGE = 'https://login2.smu.edu.sg/adfs/ls/';
+const SMU_ADFS_LOGIN_PAGE_ROOT = 'https://login2.smu.edu.sg';
 const SMU_SHIBBOLETH_SSO_URL = 'https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
 const SMU_INCORRECT_USER_ID_OR_PASSWORD = 'Incorrect user ID or password. Type the correct user ID and password, and try again.';
 const SMU_RESET_PASSWORD_URL = 'https://smu.sg/password';
@@ -36,7 +37,7 @@ exports.LOGOUT_REDIRECT_SCRIPT_2 = '<script type="text/javascript">location.href
 exports.LOGOUT_REDIRECT_URL = '/lawnet/web/lawnet/home';
 exports.LOGOUT_REDIRECT_URL_2 = '/lawnet/c';
 function loginSMU(username, password, domain, localAxios) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
     return __awaiter(this, void 0, void 0, function* () {
         let libproxyPage = yield localAxios.get(SMU_LIBPROXY_URL, { responseType: 'document' });
         let samlRequest = (_b = (_a = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('input[name="SAMLRequest"]')) === null || _b === void 0 ? void 0 : _b.getAttribute('value');
@@ -46,39 +47,42 @@ function loginSMU(username, password, domain, localAxios) {
         let params = new URLSearchParams();
         params.append('SAMLRequest', samlRequest);
         params.append('RelayState', relayState);
+        params.append('back', '2');
+        let adfsLoginPage1 = yield localAxios.post(SMU_ADFS_LOGIN_PAGE, params, { responseType: 'document' });
+        let adfsLoginPageUrl2 = SMU_ADFS_LOGIN_PAGE_ROOT + ((_f = (_e = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _e === void 0 ? void 0 : _e.querySelector('form#loginForm')) === null || _f === void 0 ? void 0 : _f.getAttribute('action'));
         params.append('UserName', username);
         params.append('Password', password);
         params.append('AuthMethod', 'FormsAuthentication');
-        let adfsLoginPage = yield localAxios.post(SMU_ADFS_LOGIN_PAGE, params, { responseType: 'document' });
-        if ((_g = (_f = (_e = adfsLoginPage === null || adfsLoginPage === void 0 ? void 0 : adfsLoginPage.data) === null || _e === void 0 ? void 0 : _e.documentElement) === null || _f === void 0 ? void 0 : _f.outerHTML) === null || _g === void 0 ? void 0 : _g.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))
+        let adfsLoginPage2 = yield localAxios.post(adfsLoginPageUrl2, params, { responseType: 'document' });
+        if ((_j = (_h = (_g = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _g === void 0 ? void 0 : _g.documentElement) === null || _h === void 0 ? void 0 : _h.outerHTML) === null || _j === void 0 ? void 0 : _j.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))
             throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset your password</a>.');
         ;
-        let samlResponse = (_j = (_h = adfsLoginPage === null || adfsLoginPage === void 0 ? void 0 : adfsLoginPage.data) === null || _h === void 0 ? void 0 : _h.querySelector('input[name="SAMLResponse"]')) === null || _j === void 0 ? void 0 : _j.getAttribute('value');
-        relayState = (_l = (_k = adfsLoginPage === null || adfsLoginPage === void 0 ? void 0 : adfsLoginPage.data) === null || _k === void 0 ? void 0 : _k.querySelector('input[name="RelayState"]')) === null || _l === void 0 ? void 0 : _l.getAttribute('value');
+        let samlResponse = (_l = (_k = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _k === void 0 ? void 0 : _k.querySelector('input[name="SAMLResponse"]')) === null || _l === void 0 ? void 0 : _l.getAttribute('value');
+        relayState = (_o = (_m = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _m === void 0 ? void 0 : _m.querySelector('input[name="RelayState"]')) === null || _o === void 0 ? void 0 : _o.getAttribute('value');
         if (!samlResponse || !relayState)
-            throw new Error((_p = (_o = (_m = adfsLoginPage === null || adfsLoginPage === void 0 ? void 0 : adfsLoginPage.data) === null || _m === void 0 ? void 0 : _m.body) === null || _o === void 0 ? void 0 : _o.innerHTML) !== null && _p !== void 0 ? _p : 'No SAML Response or Relay State');
+            throw new Error((_r = (_q = (_p = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _p === void 0 ? void 0 : _p.body) === null || _q === void 0 ? void 0 : _q.innerHTML) !== null && _r !== void 0 ? _r : 'No SAML Response or Relay State');
         params = new URLSearchParams();
         params.append('SAMLResponse', samlResponse);
         params.append('RelayState', relayState);
         let basicSearchRedirect = yield localAxios.post(SMU_SHIBBOLETH_SSO_URL, params, { responseType: 'document' });
-        if ((_s = (_r = (_q = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _q === void 0 ? void 0 : _q.documentElement) === null || _r === void 0 ? void 0 : _r.outerHTML) === null || _s === void 0 ? void 0 : _s.includes(DUPLICATE_LOGIN)) {
+        if ((_u = (_t = (_s = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _s === void 0 ? void 0 : _s.documentElement) === null || _t === void 0 ? void 0 : _t.outerHTML) === null || _u === void 0 ? void 0 : _u.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + DUPLICATE_LOGIN_REMOVE_URL);
             for (;;) {
-                if ((_v = (_u = (_t = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _t === void 0 ? void 0 : _t.documentElement) === null || _u === void 0 ? void 0 : _u.outerHTML) === null || _v === void 0 ? void 0 : _v.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
+                if ((_x = (_w = (_v = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _v === void 0 ? void 0 : _v.documentElement) === null || _w === void 0 ? void 0 : _w.outerHTML) === null || _x === void 0 ? void 0 : _x.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
                     basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL);
                     continue;
                 }
-                if ((_y = (_x = (_w = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _w === void 0 ? void 0 : _w.documentElement) === null || _x === void 0 ? void 0 : _x.outerHTML) === null || _y === void 0 ? void 0 : _y.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
+                if ((_0 = (_z = (_y = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _y === void 0 ? void 0 : _y.documentElement) === null || _z === void 0 ? void 0 : _z.outerHTML) === null || _0 === void 0 ? void 0 : _0.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
                     basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL_2);
                     continue;
                 }
                 break;
             }
         }
-        if ((_z = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _z === void 0 ? void 0 : _z.querySelector('div.alert.alert-error'))
+        if ((_1 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _1 === void 0 ? void 0 : _1.querySelector('div.alert.alert-error'))
             throw new Error(basicSearchRedirect.data.querySelector('div.alert.alert-error').innerHTML);
-        if (!((_2 = (_1 = (_0 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _0 === void 0 ? void 0 : _0.querySelector('li.userInfo')) === null || _1 === void 0 ? void 0 : _1.innerHTML) === null || _2 === void 0 ? void 0 : _2.includes('<i>Welcome')))
-            throw new Error((_5 = (_4 = (_3 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _3 === void 0 ? void 0 : _3.body) === null || _4 === void 0 ? void 0 : _4.innerHTML) !== null && _5 !== void 0 ? _5 : 'Unable to reach welcome page');
+        if (!((_4 = (_3 = (_2 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _2 === void 0 ? void 0 : _2.querySelector('li.userInfo')) === null || _3 === void 0 ? void 0 : _3.innerHTML) === null || _4 === void 0 ? void 0 : _4.includes('<i>Welcome')))
+            throw new Error((_7 = (_6 = (_5 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _5 === void 0 ? void 0 : _5.body) === null || _6 === void 0 ? void 0 : _6.innerHTML) !== null && _7 !== void 0 ? _7 : 'Unable to reach welcome page');
         return localAxios;
     });
 }
