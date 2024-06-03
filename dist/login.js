@@ -50,7 +50,7 @@ function loginSMU(username, password, domain, localAxios) {
         params.append('back', '2');
         let adfsLoginPage1 = yield localAxios.post(SMU_ADFS_LOGIN_PAGE, params, { responseType: 'document' });
         let adfsLoginPage2;
-        if (((_f = (_e = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _e === void 0 ? void 0 : _e.querySelector('form[name="hiddenform"]')) === null || _f === void 0 ? void 0 : _f.getAttribute('action')) !== SMU_SHIBBOLETH_SSO_URL) {
+        while (((_f = (_e = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _e === void 0 ? void 0 : _e.querySelector('form[name="hiddenform"]')) === null || _f === void 0 ? void 0 : _f.getAttribute('action')) !== SMU_SHIBBOLETH_SSO_URL) {
             let action = (_h = (_g = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _g === void 0 ? void 0 : _g.querySelector('form#loginForm')) === null || _h === void 0 ? void 0 : _h.getAttribute('action');
             if (!action)
                 throw new Error((_k = (_j = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _j === void 0 ? void 0 : _j.body) === null || _k === void 0 ? void 0 : _k.innerHTML);
@@ -58,14 +58,12 @@ function loginSMU(username, password, domain, localAxios) {
             params.append('UserName', username);
             params.append('Password', password);
             params.append('AuthMethod', 'FormsAuthentication');
-            adfsLoginPage2 = yield localAxios.post(adfsLoginPageUrl2, params, { responseType: 'document' });
-            if ((_o = (_m = (_l = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _l === void 0 ? void 0 : _l.documentElement) === null || _m === void 0 ? void 0 : _m.outerHTML) === null || _o === void 0 ? void 0 : _o.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))
+            adfsLoginPage1 = yield localAxios.post(adfsLoginPageUrl2, params, { responseType: 'document' });
+            if ((_o = (_m = (_l = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _l === void 0 ? void 0 : _l.documentElement) === null || _m === void 0 ? void 0 : _m.outerHTML) === null || _o === void 0 ? void 0 : _o.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))
                 throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset your password</a>.');
             ;
         }
-        else {
-            adfsLoginPage2 = adfsLoginPage1;
-        }
+        adfsLoginPage2 = adfsLoginPage1;
         let samlResponse = (_q = (_p = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _p === void 0 ? void 0 : _p.querySelector('input[name="SAMLResponse"]')) === null || _q === void 0 ? void 0 : _q.getAttribute('value');
         relayState = (_s = (_r = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _r === void 0 ? void 0 : _r.querySelector('input[name="RelayState"]')) === null || _s === void 0 ? void 0 : _s.getAttribute('value');
         if (!samlResponse || !relayState)

@@ -51,22 +51,21 @@ async function loginSMU(
 		{responseType:'document'}
 	);
 	let adfsLoginPage2:AxiosResponse<Document,any>;
-	if(adfsLoginPage1?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action')!==SMU_SHIBBOLETH_SSO_URL){
+	while(adfsLoginPage1?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action')!==SMU_SHIBBOLETH_SSO_URL){
 		let action=adfsLoginPage1?.data?.querySelector('form#loginForm')?.getAttribute('action');
 		if(!action)throw new Error(adfsLoginPage1?.data?.body?.innerHTML);
 		let adfsLoginPageUrl2=SMU_ADFS_LOGIN_PAGE_ROOT+action;
 		params.append('UserName',username);
 		params.append('Password',password);
 		params.append('AuthMethod','FormsAuthentication');
-		adfsLoginPage2=await localAxios.post<Document>(
+		adfsLoginPage1=await localAxios.post<Document>(
 			adfsLoginPageUrl2,
 			params,
 			{responseType:'document'}
 		);
-		if(adfsLoginPage2?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+SMU_RESET_PASSWORD_URL+'\',\'_system\');">reset your password</a>.');;
-	}else{
-		adfsLoginPage2=adfsLoginPage1;
+		if(adfsLoginPage1?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+SMU_RESET_PASSWORD_URL+'\',\'_system\');">reset your password</a>.');;
 	}
+	adfsLoginPage2=adfsLoginPage1;
 	let samlResponse=adfsLoginPage2?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
 	relayState=adfsLoginPage2?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
 	if(!samlResponse||!relayState)throw new Error(adfsLoginPage2?.data?.body?.innerHTML??'No SAML Response or Relay State');
