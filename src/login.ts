@@ -64,6 +64,17 @@ async function loginSMU(
 			params,
 			{responseType:'document'}
 		);
+		while(adfsLoginPage1.status>=300&&adfsLoginPage1.status<400){
+			let locationCaseSensitive='';
+			for(let i in adfsLoginPage1.headers){
+				if(i.toLowerCase()==='location')locationCaseSensitive=i;
+			}
+			if(!locationCaseSensitive)throw new Error('Redirect without location header');
+			adfsLoginPage1=await localAxios.get<Document>(
+				adfsLoginPage1.headers[locationCaseSensitive],
+				{responseType:'document'}
+			);
+		}
 		if(adfsLoginPage1?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+SMU_RESET_PASSWORD_URL+'\',\'_system\');">reset your password</a>.');;
 	}
 	adfsLoginPage2=adfsLoginPage1;

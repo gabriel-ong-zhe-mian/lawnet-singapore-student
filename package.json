@@ -1,6 +1,6 @@
 {
 	"name": "lawnet-singapore-student",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"description": "Library to login and download cases from LawNet for students in Singapore law schools.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
