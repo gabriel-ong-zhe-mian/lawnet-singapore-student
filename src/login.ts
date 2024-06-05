@@ -89,6 +89,17 @@ async function loginSMU(
 		params,
 		{responseType:'document'}
 	);
+	while(basicSearchRedirect.status>=300&&basicSearchRedirect.status<400){
+		let locationCaseSensitive='';
+		for(let i in basicSearchRedirect.headers){
+			if(i.toLowerCase()==='location')locationCaseSensitive=i;
+		}
+		if(!locationCaseSensitive)throw new Error('Redirect without location header');
+		basicSearchRedirect=await localAxios.get<Document>(
+			basicSearchRedirect.headers[locationCaseSensitive],
+			{responseType:'document'}
+		);
+	}
 	if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(DUPLICATE_LOGIN)){
 		basicSearchRedirect=await localAxios.get<Document>(FIRST_URL.SMU+DUPLICATE_LOGIN_REMOVE_URL)
 		for(;;){
