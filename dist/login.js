@@ -55,6 +55,7 @@ function loginSMU(username, password, domain, localAxios) {
             if (!action)
                 throw new Error((_k = (_j = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _j === void 0 ? void 0 : _j.body) === null || _k === void 0 ? void 0 : _k.innerHTML);
             let adfsLoginPageUrl2 = SMU_ADFS_LOGIN_PAGE_ROOT + action;
+            params = new URLSearchParams();
             params.append('UserName', username);
             params.append('Password', password);
             params.append('AuthMethod', 'FormsAuthentication');

@@ -55,6 +55,7 @@ async function loginSMU(
 		let action=adfsLoginPage1?.data?.querySelector('form#loginForm')?.getAttribute('action');
 		if(!action)throw new Error(adfsLoginPage1?.data?.body?.innerHTML);
 		let adfsLoginPageUrl2=SMU_ADFS_LOGIN_PAGE_ROOT+action;
+		params=new URLSearchParams();
 		params.append('UserName',username);
 		params.append('Password',password);
 		params.append('AuthMethod','FormsAuthentication');
