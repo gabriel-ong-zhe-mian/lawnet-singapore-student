@@ -60,6 +60,16 @@ function loginSMU(username, password, domain, localAxios) {
             params.append('Password', password);
             params.append('AuthMethod', 'FormsAuthentication');
             adfsLoginPage1 = yield localAxios.post(adfsLoginPageUrl2, params, { responseType: 'document' });
+            while (adfsLoginPage1.status >= 300 && adfsLoginPage1.status < 400) {
+                let locationCaseSensitive = '';
+                for (let i in adfsLoginPage1.headers) {
+                    if (i.toLowerCase() === 'location')
+                        locationCaseSensitive = i;
+                }
+                if (!locationCaseSensitive)
+                    throw new Error('Redirect without location header');
+                adfsLoginPage1 = yield localAxios.get(adfsLoginPage1.headers[locationCaseSensitive], { responseType: 'document' });
+            }
             if ((_o = (_m = (_l = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _l === void 0 ? void 0 : _l.documentElement) === null || _m === void 0 ? void 0 : _m.outerHTML) === null || _o === void 0 ? void 0 : _o.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))
                 throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset your password</a>.');
             ;
