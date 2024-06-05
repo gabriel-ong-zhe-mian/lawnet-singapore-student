@@ -83,6 +83,16 @@ function loginSMU(username, password, domain, localAxios) {
         params.append('SAMLResponse', samlResponse);
         params.append('RelayState', relayState);
         let basicSearchRedirect = yield localAxios.post(SMU_SHIBBOLETH_SSO_URL, params, { responseType: 'document' });
+        while (basicSearchRedirect.status >= 300 && basicSearchRedirect.status < 400) {
+            let locationCaseSensitive = '';
+            for (let i in basicSearchRedirect.headers) {
+                if (i.toLowerCase() === 'location')
+                    locationCaseSensitive = i;
+            }
+            if (!locationCaseSensitive)
+                throw new Error('Redirect without location header');
+            basicSearchRedirect = yield localAxios.get(basicSearchRedirect.headers[locationCaseSensitive], { responseType: 'document' });
+        }
         if ((_y = (_x = (_w = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _w === void 0 ? void 0 : _w.documentElement) === null || _x === void 0 ? void 0 : _x.outerHTML) === null || _y === void 0 ? void 0 : _y.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield localAxios.get(exports.FIRST_URL.SMU + DUPLICATE_LOGIN_REMOVE_URL);
             for (;;) {
