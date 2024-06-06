@@ -1,6 +1,6 @@
 {
 	"name": "lawnet-singapore-student",
-	"version": "1.0.9",
+	"version": "1.0.10",
 	"description": "Library to login and download cases from LawNet for students in Singapore law schools.",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
@@ -22,7 +22,7 @@
 	"author": "Wilson Foo Yu Kang <wilson.foo@customautosys.com>",
 	"license": "MPL-2.0",
 	"dependencies": {
-		"axios": "^0.27.2"
+		"axios": "^1.7.2"
 	},
 	"devDependencies": {
 		"typescript": "^4.7.4"
