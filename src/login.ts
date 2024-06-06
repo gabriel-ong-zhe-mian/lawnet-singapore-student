@@ -28,15 +28,33 @@ export const LOGOUT_REDIRECT_SCRIPT_2='<script type="text/javascript">location.h
 export const LOGOUT_REDIRECT_URL='/lawnet/web/lawnet/home';
 export const LOGOUT_REDIRECT_URL_2='/lawnet/c';
 
+async function followRedirects<T>(response:AxiosResponse<T>,localAxios:AxiosInstance){
+	while(response.status>=300&&response.status<400){
+		let locationCaseSensitive='';
+		for(let i in response.headers){
+			if(i.toLowerCase()==='location')locationCaseSensitive=i;
+		}
+		if(!locationCaseSensitive)throw new Error('Redirect without location header');
+		response=await localAxios.get<T>(
+			response.headers[locationCaseSensitive],
+			{responseType:'document'}
+		);
+	}
+	return response;
+}
+
 async function loginSMU(
 	username:string,
 	password:string,
 	domain?:string,
 	localAxios?:AxiosInstance
 ){
-	let libproxyPage=await localAxios.get<Document>(
-		SMU_LIBPROXY_URL,
-		{responseType:'document'}
+	let libproxyPage=await followRedirects(
+		await localAxios.get<Document>(
+			SMU_LIBPROXY_URL,
+			{responseType:'document'}
+		),
+		localAxios
 	);
 	let samlRequest=libproxyPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
 	let relayState=libproxyPage?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
@@ -45,10 +63,13 @@ async function loginSMU(
 	params.append('SAMLRequest',samlRequest);
 	params.append('RelayState',relayState);
 	params.append('back','2');
-	let adfsLoginPage1=await localAxios.post<Document>(
-		SMU_ADFS_LOGIN_PAGE,
-		params,
-		{responseType:'document'}
+	let adfsLoginPage1=await followRedirects(
+		await localAxios.post<Document>(
+			SMU_ADFS_LOGIN_PAGE,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
 	);
 	let adfsLoginPage2:AxiosResponse<Document,any>;
 	while(adfsLoginPage1?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action')!==SMU_SHIBBOLETH_SSO_URL){
@@ -59,22 +80,14 @@ async function loginSMU(
 		params.append('UserName',username);
 		params.append('Password',password);
 		params.append('AuthMethod','FormsAuthentication');
-		adfsLoginPage1=await localAxios.post<Document>(
-			adfsLoginPageUrl2,
-			params,
-			{responseType:'document'}
-		);
-		while(adfsLoginPage1.status>=300&&adfsLoginPage1.status<400){
-			let locationCaseSensitive='';
-			for(let i in adfsLoginPage1.headers){
-				if(i.toLowerCase()==='location')locationCaseSensitive=i;
-			}
-			if(!locationCaseSensitive)throw new Error('Redirect without location header');
-			adfsLoginPage1=await localAxios.get<Document>(
-				adfsLoginPage1.headers[locationCaseSensitive],
+		adfsLoginPage1=await followRedirects(
+			await localAxios.post<Document>(
+				adfsLoginPageUrl2,
+				params,
 				{responseType:'document'}
-			);
-		}
+			),
+			localAxios
+		);
 		if(adfsLoginPage1?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+SMU_RESET_PASSWORD_URL+'\',\'_system\');">reset your password</a>.');;
 	}
 	adfsLoginPage2=adfsLoginPage1;
@@ -84,31 +97,32 @@ async function loginSMU(
 	params=new URLSearchParams();
 	params.append('SAMLResponse',samlResponse);
 	params.append('RelayState',relayState);
-	let basicSearchRedirect=await localAxios.post<Document>(
-		SMU_SHIBBOLETH_SSO_URL,
-		params,
-		{responseType:'document'}
-	);
-	while(basicSearchRedirect.status>=300&&basicSearchRedirect.status<400){
-		let locationCaseSensitive='';
-		for(let i in basicSearchRedirect.headers){
-			if(i.toLowerCase()==='location')locationCaseSensitive=i;
-		}
-		if(!locationCaseSensitive)throw new Error('Redirect without location header');
-		basicSearchRedirect=await localAxios.get<Document>(
-			basicSearchRedirect.headers[locationCaseSensitive],
+	let basicSearchRedirect=await followRedirects(
+		await localAxios.post<Document>(
+			SMU_SHIBBOLETH_SSO_URL,
+			params,
 			{responseType:'document'}
-		);
-	}
+		),
+		localAxios
+	);
 	if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(DUPLICATE_LOGIN)){
-		basicSearchRedirect=await localAxios.get<Document>(FIRST_URL.SMU+DUPLICATE_LOGIN_REMOVE_URL)
+		basicSearchRedirect=await followRedirects(
+			await localAxios.get<Document>(FIRST_URL.SMU+DUPLICATE_LOGIN_REMOVE_URL),
+			localAxios
+		);
 		for(;;){
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT)){
-				basicSearchRedirect=await localAxios.get<Document>(FIRST_URL.SMU+LOGOUT_REDIRECT_URL);
+				basicSearchRedirect=await followRedirects(
+					await localAxios.get<Document>(FIRST_URL.SMU+LOGOUT_REDIRECT_URL),
+					localAxios
+				);
 				continue;
 			}
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT_2)){
-				basicSearchRedirect=await localAxios.get<Document>(FIRST_URL.SMU+LOGOUT_REDIRECT_URL_2);
+				basicSearchRedirect=await followRedirects(
+					await localAxios.get<Document>(FIRST_URL.SMU+LOGOUT_REDIRECT_URL_2),
+					localAxios
+				);
 				continue;
 			}
 			break;
@@ -125,9 +139,12 @@ async function loginNUS(
 	domain?:string,
 	localAxios?:AxiosInstance
 ){
-	let lawproxyPage=await localAxios.get<Document>(
-		NUS_LAWPROXY_URL,
-		{responseType:'document'}
+	let lawproxyPage=await followRedirects(
+		await localAxios.get<Document>(
+			NUS_LAWPROXY_URL,
+			{responseType:'document'}
+		),
+		localAxios
 	);
 	if(lawproxyPage?.data?.querySelector('div[class="resourcesAccordion"]'))return localAxios; //already authenticated
 	let params=new URLSearchParams();
@@ -135,28 +152,43 @@ async function loginNUS(
 	params.append('user',username);
 	params.append('pass',password);
 	params.append('url',NUS_IP_ACCESS_URL);
-	let loginFormPage=await localAxios.post<Document>(
-		NUS_LOGIN_FORM_URL,
-		params,
-		{responseType:'document'}
+	let loginFormPage=await followRedirects(
+		await localAxios.post<Document>(
+			NUS_LOGIN_FORM_URL,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
 	);
 	if(loginFormPage?.data?.documentElement?.outerHTML?.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+NUS_HELPDESK_URL+'\',\'_system\');">contact the NUS Helpdesk</a>.');
 	let loginFormAction=loginFormPage?.data?.querySelector('form[action]')?.getAttribute('action');
 	if(!loginFormAction)throw new Error(loginFormPage?.data?.body?.innerHTML??'Error retrieving NUS login form');
-	let basicSearchRedirect=await localAxios.post<Document>(
-		loginFormAction,
-		params,
-		{responseType:'document'}
+	let basicSearchRedirect=await followRedirects(
+		await localAxios.post<Document>(
+			loginFormAction,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
 	);
 	if(basicSearchRedirect?.data?.documentElement?.innerHTML?.includes(DUPLICATE_LOGIN)){
-		basicSearchRedirect=await localAxios.get<Document>(FIRST_URL.NUS+DUPLICATE_LOGIN_REMOVE_URL)
+		basicSearchRedirect=await followRedirects(
+			await localAxios.get<Document>(FIRST_URL.NUS+DUPLICATE_LOGIN_REMOVE_URL),
+			localAxios
+		);
 		for(;;){
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT)){
-				basicSearchRedirect=await localAxios.get<Document>(FIRST_URL.NUS+LOGOUT_REDIRECT_URL);
+				basicSearchRedirect=await followRedirects(
+					await localAxios.get<Document>(FIRST_URL.NUS+LOGOUT_REDIRECT_URL),
+					localAxios
+				);
 				continue;
 			}
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT_2)){
-				basicSearchRedirect=await localAxios.get<Document>(FIRST_URL.NUS+LOGOUT_REDIRECT_URL_2);
+				basicSearchRedirect=await followRedirects(
+					await localAxios.get<Document>(FIRST_URL.NUS+LOGOUT_REDIRECT_URL_2),
+					localAxios
+				);
 				continue;
 			}
 			break;
