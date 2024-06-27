@@ -25,6 +25,9 @@ const SMU_ADFS_LOGIN_PAGE_ROOT = 'https://login2.smu.edu.sg';
 const SMU_SHIBBOLETH_SSO_URL = 'https://login.libproxy.smu.edu.sg:443/Shibboleth.sso/SAML2/POST';
 const SMU_INCORRECT_USER_ID_OR_PASSWORD = 'Incorrect user ID or password. Type the correct user ID and password, and try again.';
 const SMU_RESET_PASSWORD_URL = 'https://smu.sg/password';
+const NUS_LOGIN_URL = 'https://libproxy1.nus.edu.sg/login';
+const NUS_LAWNET_URL = 'https://www.lawnet.sg/lawnet/ip-access';
+const NUS_VAFS_LOGIN_PAGE = 'https://vafs.nus.edu.sg/adfs/ls/';
 const NUS_LAWPROXY_URL = 'https://www-lawnet-sg.lawproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
 const NUS_IP_ACCESS_URL = 'http://www.lawnet.sg/lawnet/ip-access';
 const NUS_LOGIN_FORM_URL = 'https://proxylogin.nus.edu.sg/lawproxy1/public/login_form.asp';
@@ -112,10 +115,13 @@ function loginSMU(username, password, domain, localAxios) {
 function loginNUS(username, password, domain, localAxios) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     return __awaiter(this, void 0, void 0, function* () {
-        let lawproxyPage = yield followRedirects(yield localAxios.get(NUS_LAWPROXY_URL, { responseType: 'document' }), localAxios);
-        if ((_a = lawproxyPage === null || lawproxyPage === void 0 ? void 0 : lawproxyPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('div[class="resourcesAccordion"]'))
-            return localAxios; //already authenticated
         let params = new URLSearchParams();
+        params.append('url', NUS_LAWNET_URL);
+        params.append('auth', 'adfs');
+        let lawnetFirstPage = yield followRedirects(yield localAxios.post(NUS_LOGIN_URL, params, { responseType: 'document' }), localAxios);
+        if ((_a = lawnetFirstPage === null || lawnetFirstPage === void 0 ? void 0 : lawnetFirstPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('div[class="resourcesAccordion"]'))
+            return localAxios; //already authenticated
+        params = new URLSearchParams();
         params.append('domain', domain);
         params.append('user', username);
         params.append('pass', password);

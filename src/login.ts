@@ -15,6 +15,9 @@ const SMU_SHIBBOLETH_SSO_URL='https://login.libproxy.smu.edu.sg:443/Shibboleth.s
 const SMU_INCORRECT_USER_ID_OR_PASSWORD='Incorrect user ID or password. Type the correct user ID and password, and try again.';
 const SMU_RESET_PASSWORD_URL='https://smu.sg/password';
 
+const NUS_LOGIN_URL='https://libproxy1.nus.edu.sg/login';
+const NUS_LAWNET_URL='https://www.lawnet.sg/lawnet/ip-access';
+const NUS_VAFS_LOGIN_PAGE='https://vafs.nus.edu.sg/adfs/ls/';
 const NUS_LAWPROXY_URL='https://www-lawnet-sg.lawproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
 const NUS_IP_ACCESS_URL='http://www.lawnet.sg/lawnet/ip-access';
 const NUS_LOGIN_FORM_URL='https://proxylogin.nus.edu.sg/lawproxy1/public/login_form.asp';
@@ -139,15 +142,20 @@ async function loginNUS(
 	domain?:string,
 	localAxios?:AxiosInstance
 ){
-	let lawproxyPage=await followRedirects(
-		await localAxios.get<Document>(
-			NUS_LAWPROXY_URL,
+	let params=new URLSearchParams();
+	params.append('url',NUS_LAWNET_URL);
+	params.append('auth','adfs');
+
+	let lawnetFirstPage=await followRedirects(
+		await localAxios.post<Document>(
+			NUS_LOGIN_URL,
+			params,
 			{responseType:'document'}
 		),
 		localAxios
 	);
-	if(lawproxyPage?.data?.querySelector('div[class="resourcesAccordion"]'))return localAxios; //already authenticated
-	let params=new URLSearchParams();
+	if(lawnetFirstPage?.data?.querySelector('div[class="resourcesAccordion"]'))return localAxios; //already authenticated
+	params=new URLSearchParams();
 	params.append('domain',domain);
 	params.append('user',username);
 	params.append('pass',password);
