@@ -178,9 +178,26 @@ async function loginNUS(
 	params.append('UserName',domain+'\\'+username);
 	params.append('Password',password);
 	params.append('AuthMethod','FormsAuthentication');
-	let basicSearchRedirect=await followRedirects(
+	let shibbolethRedirect=await followRedirects(
 		await localAxios.post<Document>(
 			NUS_VAFS_PREFIX+loginFormAction,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
+	);
+	let shibbolethFormAction=shibbolethRedirect?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
+	if(!shibbolethFormAction)throw new Error('No Shibboleth form action for NUS');
+	let shibbolethSAMLResponse=shibbolethRedirect?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+	if(!shibbolethSAMLResponse)throw new Error('No Shibboleth SAMLResponse for NUS');
+	let shibbolethRelayState=shibbolethRedirect?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
+	if(!shibbolethRelayState)throw new Error('No Shibboleth RelayState for NUS');
+	params=new URLSearchParams();
+	params.append('SAMLResponse',shibbolethSAMLResponse);
+	params.append('RelayState',shibbolethRelayState);
+	let basicSearchRedirect=await followRedirects(
+		await localAxios.post<Document>(
+			shibbolethFormAction,
 			params,
 			{responseType:'document'}
 		),
