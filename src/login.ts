@@ -3,7 +3,6 @@ import axios,{
 	AxiosResponse
 }from 'axios';
 
-export let corsPrefix='';
 export const FIRST_URL={
 	SMU:'https://www-lawnet-sg.libproxy.smu.edu.sg',
 	NUS:'https://www-lawnet-sg.libproxy1.nus.edu.sg'
@@ -32,7 +31,7 @@ export const LOGOUT_REDIRECT_SCRIPT_2='<script type="text/javascript">location.h
 export const LOGOUT_REDIRECT_URL='/lawnet/web/lawnet/home';
 export const LOGOUT_REDIRECT_URL_2='/lawnet/c';
 
-async function followRedirects<T>(response:AxiosResponse<T>,localAxios:AxiosInstance){
+async function followRedirects<T>(response:AxiosResponse<T>,localAxios:AxiosInstance,corsPrefix?:string){
 	while(response.status>=300&&response.status<400){
 		let locationCaseSensitive='';
 		for(let i in response.headers){
@@ -52,6 +51,7 @@ async function followRedirects<T>(response:AxiosResponse<T>,localAxios:AxiosInst
 async function loginSMU(
 	username:string,
 	password:string,
+	corsPrefix?:string,
 	domain?:string,
 	localAxios?:AxiosInstance
 ){
@@ -142,6 +142,7 @@ async function loginSMU(
 async function loginNUS(
 	username:string,
 	password:string,
+	corsPrefix?:string,
 	domain?:string,
 	localAxios?:AxiosInstance
 ){
@@ -236,6 +237,7 @@ async function loginNUS(
 async function loginSUSS(
 	username:string,
 	password:string,
+	corsPrefix?:string,
 	domain?:string,
 	localAxios?:AxiosInstance
 ):Promise<AxiosInstance>{
@@ -252,13 +254,16 @@ export async function login(params:{
 	school:'SMU'|'NUS'|'SUSS',
 	username:string,
 	password:string,
+	corsPrefix?:string,
 	domain?:string,
 	localAxios?:AxiosInstance
 }):Promise<AxiosInstance>{
+	let corsPrefix=params.corsPrefix;
 	if(corsPrefix.trim()&&!corsPrefix.endsWith('/'))corsPrefix+='/';
 	return await loginFunctions[params.school](
 		params.username,
 		params.password,
+		corsPrefix,
 		params.domain,
 		params.localAxios??axios.create({
 			baseURL:corsPrefix+FIRST_URL[params.school],

@@ -1,6 +1,5 @@
 import {AxiosInstance} from 'axios';
 import{
-	corsPrefix,
 	FIRST_URL,
 	LOGOUT_REDIRECT_SCRIPT,
 	LOGOUT_REDIRECT_SCRIPT_2
@@ -13,6 +12,7 @@ const LOGOUT_URL='/lawnet/c/portal/logout?referer=/lawnet/web/lawnet/home';
 
 export async function logout(args:{
 	school:'SMU'|'NUS'|'SUSS',
+	corsPrefix?:string,
 	localAxios:AxiosInstance
 }):Promise<void>{
 	let url=LOGOUT_CHECK_URL,method='POST',params=LOGOUT_POST;
@@ -20,6 +20,7 @@ export async function logout(args:{
 	let loggedIn=true;
 	while(loggedIn){
 		try{
+			if(!url.startsWith(args.corsPrefix))url=args.corsPrefix+url;
 			let response=await args.localAxios.request({
 				url,
 				method,
@@ -40,17 +41,17 @@ export async function logout(args:{
 				url=args.localAxios.defaults.baseURL+LOGOUT_URL;
 				method='get';
 			}else if(response.data.includes(LOGOUT_REDIRECT_SCRIPT)){
-				url=args.localAxios.defaults.baseURL=corsPrefix+FIRST_URL[args.school]+'/lawnet/web/lawnet/home';
+				url=args.localAxios.defaults.baseURL=args.corsPrefix+FIRST_URL[args.school]+'/lawnet/web/lawnet/home';
 				method='get';
 			}else if(response.data.includes(LOGOUT_REDIRECT_SCRIPT_2)){
-				url=corsPrefix+FIRST_URL[args.school]+'/lawnet/c';
+				url=args.corsPrefix+FIRST_URL[args.school]+'/lawnet/c';
 				method='get';
 			}else{
 				loggedIn=false;
 			}
 		}catch(error){
 			//break infinite loop
-			if(url===LOGOUT_CHECK_URL)url=corsPrefix+FIRST_URL[args.school]+LOGOUT_URL;
+			if(url===LOGOUT_CHECK_URL)url=args.corsPrefix+FIRST_URL[args.school]+LOGOUT_URL;
 			else loggedIn=false; //give up
 		}
 	}

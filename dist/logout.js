@@ -22,6 +22,8 @@ function logout(args) {
         let loggedIn = true;
         while (loggedIn) {
             try {
+                if (!url.startsWith(args.corsPrefix))
+                    url = args.corsPrefix + url;
                 let response = yield args.localAxios.request({
                     url,
                     method,
@@ -44,11 +46,11 @@ function logout(args) {
                     method = 'get';
                 }
                 else if (response.data.includes(login_1.LOGOUT_REDIRECT_SCRIPT)) {
-                    url = args.localAxios.defaults.baseURL = login_1.corsPrefix + login_1.FIRST_URL[args.school] + '/lawnet/web/lawnet/home';
+                    url = args.localAxios.defaults.baseURL = args.corsPrefix + login_1.FIRST_URL[args.school] + '/lawnet/web/lawnet/home';
                     method = 'get';
                 }
                 else if (response.data.includes(login_1.LOGOUT_REDIRECT_SCRIPT_2)) {
-                    url = login_1.corsPrefix + login_1.FIRST_URL[args.school] + '/lawnet/c';
+                    url = args.corsPrefix + login_1.FIRST_URL[args.school] + '/lawnet/c';
                     method = 'get';
                 }
                 else {
@@ -58,7 +60,7 @@ function logout(args) {
             catch (error) {
                 //break infinite loop
                 if (url === LOGOUT_CHECK_URL)
-                    url = login_1.corsPrefix + login_1.FIRST_URL[args.school] + LOGOUT_URL;
+                    url = args.corsPrefix + login_1.FIRST_URL[args.school] + LOGOUT_URL;
                 else
                     loggedIn = false; //give up
             }
