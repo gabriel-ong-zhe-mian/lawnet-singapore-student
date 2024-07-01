@@ -113,44 +113,48 @@ function loginSMU(username, password, domain, localAxios) {
     });
 }
 function loginNUS(username, password, domain, localAxios) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4;
     return __awaiter(this, void 0, void 0, function* () {
         let params = new URLSearchParams();
         params.append('url', NUS_LAWNET_URL);
         params.append('auth', 'adfs');
-        let lawnetFirstPage = yield followRedirects(yield localAxios.post(NUS_LOGIN_URL, params, { responseType: 'document' }), localAxios);
-        if ((_a = lawnetFirstPage === null || lawnetFirstPage === void 0 ? void 0 : lawnetFirstPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('div[class="resourcesAccordion"]'))
+        let nusLoginPage = yield followRedirects(yield localAxios.post(NUS_LOGIN_URL, params, { responseType: 'document' }), localAxios);
+        if ((_a = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('div[class="resourcesAccordion"]'))
             return localAxios; //already authenticated
+        let samlRequest = (_c = (_b = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _b === void 0 ? void 0 : _b.querySelector('input[name="SAMLRequest"]')) === null || _c === void 0 ? void 0 : _c.getAttribute('value');
+        if (!samlRequest)
+            throw new Error('No SAMLRequest on NUS login page');
+        let relayState = (_e = (_d = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _d === void 0 ? void 0 : _d.querySelector('input[name="RelayState"]')) === null || _e === void 0 ? void 0 : _e.getAttribute('value');
+        if (!relayState)
+            throw new Error('No RelayState on NUS login page');
         params = new URLSearchParams();
-        params.append('domain', domain);
-        params.append('user', username);
-        params.append('pass', password);
-        params.append('url', NUS_IP_ACCESS_URL);
-        let loginFormPage = yield followRedirects(yield localAxios.post(NUS_LOGIN_FORM_URL, params, { responseType: 'document' }), localAxios);
-        if ((_d = (_c = (_b = loginFormPage === null || loginFormPage === void 0 ? void 0 : loginFormPage.data) === null || _b === void 0 ? void 0 : _b.documentElement) === null || _c === void 0 ? void 0 : _c.outerHTML) === null || _d === void 0 ? void 0 : _d.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD))
+        params.append('SAMLRequest', samlRequest);
+        params.append('RelayState', relayState);
+        let nusVafsLoginPage = yield followRedirects(yield localAxios.post(NUS_VAFS_LOGIN_PAGE, params, { responseType: 'document' }), localAxios);
+        if ((_h = (_g = (_f = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _f === void 0 ? void 0 : _f.documentElement) === null || _g === void 0 ? void 0 : _g.outerHTML) === null || _h === void 0 ? void 0 : _h.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD))
             throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
-        let loginFormAction = (_f = (_e = loginFormPage === null || loginFormPage === void 0 ? void 0 : loginFormPage.data) === null || _e === void 0 ? void 0 : _e.querySelector('form[action]')) === null || _f === void 0 ? void 0 : _f.getAttribute('action');
+        let loginFormAction = (_k = (_j = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _j === void 0 ? void 0 : _j.querySelector('form#loginForm[action]')) === null || _k === void 0 ? void 0 : _k.getAttribute('action');
         if (!loginFormAction)
-            throw new Error((_j = (_h = (_g = loginFormPage === null || loginFormPage === void 0 ? void 0 : loginFormPage.data) === null || _g === void 0 ? void 0 : _g.body) === null || _h === void 0 ? void 0 : _h.innerHTML) !== null && _j !== void 0 ? _j : 'Error retrieving NUS login form');
+            throw new Error((_o = (_m = (_l = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _l === void 0 ? void 0 : _l.body) === null || _m === void 0 ? void 0 : _m.innerHTML) !== null && _o !== void 0 ? _o : 'Error retrieving NUS login form');
         let basicSearchRedirect = yield followRedirects(yield localAxios.post(loginFormAction, params, { responseType: 'document' }), localAxios);
-        if ((_m = (_l = (_k = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _k === void 0 ? void 0 : _k.documentElement) === null || _l === void 0 ? void 0 : _l.innerHTML) === null || _m === void 0 ? void 0 : _m.includes(DUPLICATE_LOGIN)) {
+        if ((_r = (_q = (_p = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _p === void 0 ? void 0 : _p.documentElement) === null || _q === void 0 ? void 0 : _q.innerHTML) === null || _r === void 0 ? void 0 : _r.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.NUS + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
             for (;;) {
-                if ((_q = (_p = (_o = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _o === void 0 ? void 0 : _o.documentElement) === null || _p === void 0 ? void 0 : _p.outerHTML) === null || _q === void 0 ? void 0 : _q.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
+                if ((_u = (_t = (_s = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _s === void 0 ? void 0 : _s.documentElement) === null || _t === void 0 ? void 0 : _t.outerHTML) === null || _u === void 0 ? void 0 : _u.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
                     basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.NUS + exports.LOGOUT_REDIRECT_URL), localAxios);
                     continue;
                 }
-                if ((_t = (_s = (_r = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _r === void 0 ? void 0 : _r.documentElement) === null || _s === void 0 ? void 0 : _s.outerHTML) === null || _t === void 0 ? void 0 : _t.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
+                if ((_x = (_w = (_v = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _v === void 0 ? void 0 : _v.documentElement) === null || _w === void 0 ? void 0 : _w.outerHTML) === null || _x === void 0 ? void 0 : _x.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
                     basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.NUS + exports.LOGOUT_REDIRECT_URL_2), localAxios);
                     continue;
                 }
                 break;
             }
         }
-        if ((_u = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _u === void 0 ? void 0 : _u.querySelector('div.alert.alert-error'))
+        if ((_y = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _y === void 0 ? void 0 : _y.querySelector('div.alert.alert-error'))
             throw new Error(basicSearchRedirect.data.querySelector('div.alert.alert-error').innerHTML);
-        if (!((_x = (_w = (_v = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _v === void 0 ? void 0 : _v.querySelector('li.userInfo')) === null || _w === void 0 ? void 0 : _w.innerHTML) === null || _x === void 0 ? void 0 : _x.includes('<i>Welcome')))
-            throw new Error((_0 = (_z = (_y = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _y === void 0 ? void 0 : _y.body) === null || _z === void 0 ? void 0 : _z.innerHTML) !== null && _0 !== void 0 ? _0 : 'Unable to reach welcome page');
+        if (!((_1 = (_0 = (_z = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _z === void 0 ? void 0 : _z.querySelector('li.userInfo')) === null || _0 === void 0 ? void 0 : _0.innerHTML) === null || _1 === void 0 ? void 0 : _1.includes('<i>Welcome')))
+            throw new Error((_4 = (_3 = (_2 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _2 === void 0 ? void 0 : _2.body) === null || _3 === void 0 ? void 0 : _3.innerHTML) !== null && _4 !== void 0 ? _4 : 'Unable to reach welcome page');
         return localAxios;
     });
 }
