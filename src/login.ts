@@ -39,8 +39,10 @@ async function followRedirects<T>(response:AxiosResponse<T>,localAxios:AxiosInst
 			if(i.toLowerCase()==='location')locationCaseSensitive=i;
 		}
 		if(!locationCaseSensitive)throw new Error('Redirect without location header');
+		let location=response.headers[locationCaseSensitive];
+		if(!location.startsWith(corsPrefix))location=corsPrefix+location;
 		response=await localAxios.get<T>(
-			response.headers[locationCaseSensitive],
+			location,
 			{responseType:'document'}
 		);
 	}
@@ -55,7 +57,7 @@ async function loginSMU(
 ){
 	let libproxyPage=await followRedirects(
 		await localAxios.get<Document>(
-			SMU_LIBPROXY_URL,
+			corsPrefix+SMU_LIBPROXY_URL,
 			{responseType:'document'}
 		),
 		localAxios
@@ -69,7 +71,7 @@ async function loginSMU(
 	params.append('back','2');
 	let adfsLoginPage1=await followRedirects(
 		await localAxios.post<Document>(
-			SMU_ADFS_LOGIN_PAGE,
+			corsPrefix+SMU_ADFS_LOGIN_PAGE,
 			params,
 			{responseType:'document'}
 		),
@@ -86,7 +88,7 @@ async function loginSMU(
 		params.append('AuthMethod','FormsAuthentication');
 		adfsLoginPage1=await followRedirects(
 			await localAxios.post<Document>(
-				adfsLoginPageUrl2,
+				corsPrefix+adfsLoginPageUrl2,
 				params,
 				{responseType:'document'}
 			),
@@ -103,7 +105,7 @@ async function loginSMU(
 	params.append('RelayState',relayState);
 	let basicSearchRedirect=await followRedirects(
 		await localAxios.post<Document>(
-			SMU_SHIBBOLETH_SSO_URL,
+			corsPrefix+SMU_SHIBBOLETH_SSO_URL,
 			params,
 			{responseType:'document'}
 		),
@@ -111,20 +113,20 @@ async function loginSMU(
 	);
 	if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(DUPLICATE_LOGIN)){
 		basicSearchRedirect=await followRedirects(
-			await localAxios.get<Document>(FIRST_URL.SMU+DUPLICATE_LOGIN_REMOVE_URL),
+			await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+DUPLICATE_LOGIN_REMOVE_URL),
 			localAxios
 		);
 		for(;;){
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT)){
 				basicSearchRedirect=await followRedirects(
-					await localAxios.get<Document>(FIRST_URL.SMU+LOGOUT_REDIRECT_URL),
+					await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+LOGOUT_REDIRECT_URL),
 					localAxios
 				);
 				continue;
 			}
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT_2)){
 				basicSearchRedirect=await followRedirects(
-					await localAxios.get<Document>(FIRST_URL.SMU+LOGOUT_REDIRECT_URL_2),
+					await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+LOGOUT_REDIRECT_URL_2),
 					localAxios
 				);
 				continue;
@@ -149,7 +151,7 @@ async function loginNUS(
 
 	let nusLoginPage=await followRedirects(
 		await localAxios.post<Document>(
-			NUS_LOGIN_URL,
+			corsPrefix+NUS_LOGIN_URL,
 			params,
 			{responseType:'document'}
 		),
@@ -165,7 +167,7 @@ async function loginNUS(
 	params.append('RelayState',relayState);
 	let nusVafsLoginPage=await followRedirects(
 		await localAxios.post<Document>(
-			NUS_VAFS_LOGIN_PAGE,
+			corsPrefix+NUS_VAFS_LOGIN_PAGE,
 			params,
 			{responseType:'document'}
 		),
@@ -180,7 +182,7 @@ async function loginNUS(
 	params.append('AuthMethod','FormsAuthentication');
 	let shibbolethRedirect=await followRedirects(
 		await localAxios.post<Document>(
-			NUS_VAFS_PREFIX+loginFormAction,
+			corsPrefix+NUS_VAFS_PREFIX+loginFormAction,
 			params,
 			{responseType:'document'}
 		),
@@ -197,7 +199,7 @@ async function loginNUS(
 	params.append('RelayState',shibbolethRelayState);
 	let basicSearchRedirect=await followRedirects(
 		await localAxios.post<Document>(
-			shibbolethFormAction,
+			corsPrefix+shibbolethFormAction,
 			params,
 			{responseType:'document'}
 		),
@@ -205,20 +207,20 @@ async function loginNUS(
 	);
 	if(basicSearchRedirect?.data?.documentElement?.innerHTML?.includes(DUPLICATE_LOGIN)){
 		basicSearchRedirect=await followRedirects(
-			await localAxios.get<Document>(FIRST_URL.NUS+DUPLICATE_LOGIN_REMOVE_URL),
+			await localAxios.get<Document>(corsPrefix+FIRST_URL.NUS+DUPLICATE_LOGIN_REMOVE_URL),
 			localAxios
 		);
 		for(;;){
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT)){
 				basicSearchRedirect=await followRedirects(
-					await localAxios.get<Document>(FIRST_URL.NUS+LOGOUT_REDIRECT_URL),
+					await localAxios.get<Document>(corsPrefix+FIRST_URL.NUS+LOGOUT_REDIRECT_URL),
 					localAxios
 				);
 				continue;
 			}
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT_2)){
 				basicSearchRedirect=await followRedirects(
-					await localAxios.get<Document>(FIRST_URL.NUS+LOGOUT_REDIRECT_URL_2),
+					await localAxios.get<Document>(corsPrefix+FIRST_URL.NUS+LOGOUT_REDIRECT_URL_2),
 					localAxios
 				);
 				continue;

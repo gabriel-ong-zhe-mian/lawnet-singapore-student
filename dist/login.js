@@ -50,7 +50,10 @@ function followRedirects(response, localAxios) {
             }
             if (!locationCaseSensitive)
                 throw new Error('Redirect without location header');
-            response = yield localAxios.get(response.headers[locationCaseSensitive], { responseType: 'document' });
+            let location = response.headers[locationCaseSensitive];
+            if (!location.startsWith(exports.corsPrefix))
+                location = exports.corsPrefix + location;
+            response = yield localAxios.get(location, { responseType: 'document' });
         }
         return response;
     });
@@ -58,7 +61,7 @@ function followRedirects(response, localAxios) {
 function loginSMU(username, password, domain, localAxios) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11;
     return __awaiter(this, void 0, void 0, function* () {
-        let libproxyPage = yield followRedirects(yield localAxios.get(SMU_LIBPROXY_URL, { responseType: 'document' }), localAxios);
+        let libproxyPage = yield followRedirects(yield localAxios.get(exports.corsPrefix + SMU_LIBPROXY_URL, { responseType: 'document' }), localAxios);
         let samlRequest = (_b = (_a = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('input[name="SAMLRequest"]')) === null || _b === void 0 ? void 0 : _b.getAttribute('value');
         let relayState = (_d = (_c = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _c === void 0 ? void 0 : _c.querySelector('input[name="RelayState"]')) === null || _d === void 0 ? void 0 : _d.getAttribute('value');
         if (!samlRequest || !relayState)
@@ -67,7 +70,7 @@ function loginSMU(username, password, domain, localAxios) {
         params.append('SAMLRequest', samlRequest);
         params.append('RelayState', relayState);
         params.append('back', '2');
-        let adfsLoginPage1 = yield followRedirects(yield localAxios.post(SMU_ADFS_LOGIN_PAGE, params, { responseType: 'document' }), localAxios);
+        let adfsLoginPage1 = yield followRedirects(yield localAxios.post(exports.corsPrefix + SMU_ADFS_LOGIN_PAGE, params, { responseType: 'document' }), localAxios);
         let adfsLoginPage2;
         while (((_f = (_e = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _e === void 0 ? void 0 : _e.querySelector('form[name="hiddenform"]')) === null || _f === void 0 ? void 0 : _f.getAttribute('action')) !== SMU_SHIBBOLETH_SSO_URL) {
             let action = (_h = (_g = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _g === void 0 ? void 0 : _g.querySelector('form#loginForm')) === null || _h === void 0 ? void 0 : _h.getAttribute('action');
@@ -78,7 +81,7 @@ function loginSMU(username, password, domain, localAxios) {
             params.append('UserName', username);
             params.append('Password', password);
             params.append('AuthMethod', 'FormsAuthentication');
-            adfsLoginPage1 = yield followRedirects(yield localAxios.post(adfsLoginPageUrl2, params, { responseType: 'document' }), localAxios);
+            adfsLoginPage1 = yield followRedirects(yield localAxios.post(exports.corsPrefix + adfsLoginPageUrl2, params, { responseType: 'document' }), localAxios);
             if ((_o = (_m = (_l = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _l === void 0 ? void 0 : _l.documentElement) === null || _m === void 0 ? void 0 : _m.outerHTML) === null || _o === void 0 ? void 0 : _o.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))
                 throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset your password</a>.');
             ;
@@ -91,16 +94,16 @@ function loginSMU(username, password, domain, localAxios) {
         params = new URLSearchParams();
         params.append('SAMLResponse', samlResponse);
         params.append('RelayState', relayState);
-        let basicSearchRedirect = yield followRedirects(yield localAxios.post(SMU_SHIBBOLETH_SSO_URL, params, { responseType: 'document' }), localAxios);
+        let basicSearchRedirect = yield followRedirects(yield localAxios.post(exports.corsPrefix + SMU_SHIBBOLETH_SSO_URL, params, { responseType: 'document' }), localAxios);
         if ((_y = (_x = (_w = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _w === void 0 ? void 0 : _w.documentElement) === null || _x === void 0 ? void 0 : _x.outerHTML) === null || _y === void 0 ? void 0 : _y.includes(DUPLICATE_LOGIN)) {
-            basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.SMU + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
+            basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.corsPrefix + exports.FIRST_URL.SMU + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
             for (;;) {
                 if ((_1 = (_0 = (_z = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _z === void 0 ? void 0 : _z.documentElement) === null || _0 === void 0 ? void 0 : _0.outerHTML) === null || _1 === void 0 ? void 0 : _1.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
-                    basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL), localAxios);
+                    basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.corsPrefix + exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL), localAxios);
                     continue;
                 }
                 if ((_4 = (_3 = (_2 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _2 === void 0 ? void 0 : _2.documentElement) === null || _3 === void 0 ? void 0 : _3.outerHTML) === null || _4 === void 0 ? void 0 : _4.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
-                    basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL_2), localAxios);
+                    basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.corsPrefix + exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL_2), localAxios);
                     continue;
                 }
                 break;
@@ -119,7 +122,7 @@ function loginNUS(username, password, domain, localAxios) {
         let params = new URLSearchParams();
         params.append('url', NUS_LAWNET_URL);
         params.append('auth', 'adfs');
-        let nusLoginPage = yield followRedirects(yield localAxios.post(NUS_LOGIN_URL, params, { responseType: 'document' }), localAxios);
+        let nusLoginPage = yield followRedirects(yield localAxios.post(exports.corsPrefix + NUS_LOGIN_URL, params, { responseType: 'document' }), localAxios);
         if ((_a = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('div[class="resourcesAccordion"]'))
             return localAxios; //already authenticated
         let samlRequest = (_c = (_b = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _b === void 0 ? void 0 : _b.querySelector('input[name="SAMLRequest"]')) === null || _c === void 0 ? void 0 : _c.getAttribute('value');
@@ -131,7 +134,7 @@ function loginNUS(username, password, domain, localAxios) {
         params = new URLSearchParams();
         params.append('SAMLRequest', samlRequest);
         params.append('RelayState', relayState);
-        let nusVafsLoginPage = yield followRedirects(yield localAxios.post(NUS_VAFS_LOGIN_PAGE, params, { responseType: 'document' }), localAxios);
+        let nusVafsLoginPage = yield followRedirects(yield localAxios.post(exports.corsPrefix + NUS_VAFS_LOGIN_PAGE, params, { responseType: 'document' }), localAxios);
         if ((_h = (_g = (_f = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _f === void 0 ? void 0 : _f.documentElement) === null || _g === void 0 ? void 0 : _g.outerHTML) === null || _h === void 0 ? void 0 : _h.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD))
             throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
         let loginFormAction = (_k = (_j = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _j === void 0 ? void 0 : _j.querySelector('form#loginForm[action]')) === null || _k === void 0 ? void 0 : _k.getAttribute('action');
@@ -141,7 +144,7 @@ function loginNUS(username, password, domain, localAxios) {
         params.append('UserName', domain + '\\' + username);
         params.append('Password', password);
         params.append('AuthMethod', 'FormsAuthentication');
-        let shibbolethRedirect = yield followRedirects(yield localAxios.post(NUS_VAFS_PREFIX + loginFormAction, params, { responseType: 'document' }), localAxios);
+        let shibbolethRedirect = yield followRedirects(yield localAxios.post(exports.corsPrefix + NUS_VAFS_PREFIX + loginFormAction, params, { responseType: 'document' }), localAxios);
         let shibbolethFormAction = (_q = (_p = shibbolethRedirect === null || shibbolethRedirect === void 0 ? void 0 : shibbolethRedirect.data) === null || _p === void 0 ? void 0 : _p.querySelector('form[name="hiddenform"][action]')) === null || _q === void 0 ? void 0 : _q.getAttribute('action');
         if (!shibbolethFormAction)
             throw new Error('No Shibboleth form action for NUS');
@@ -154,16 +157,16 @@ function loginNUS(username, password, domain, localAxios) {
         params = new URLSearchParams();
         params.append('SAMLResponse', shibbolethSAMLResponse);
         params.append('RelayState', shibbolethRelayState);
-        let basicSearchRedirect = yield followRedirects(yield localAxios.post(shibbolethFormAction, params, { responseType: 'document' }), localAxios);
+        let basicSearchRedirect = yield followRedirects(yield localAxios.post(exports.corsPrefix + shibbolethFormAction, params, { responseType: 'document' }), localAxios);
         if ((_x = (_w = (_v = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _v === void 0 ? void 0 : _v.documentElement) === null || _w === void 0 ? void 0 : _w.innerHTML) === null || _x === void 0 ? void 0 : _x.includes(DUPLICATE_LOGIN)) {
-            basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.NUS + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
+            basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.corsPrefix + exports.FIRST_URL.NUS + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
             for (;;) {
                 if ((_0 = (_z = (_y = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _y === void 0 ? void 0 : _y.documentElement) === null || _z === void 0 ? void 0 : _z.outerHTML) === null || _0 === void 0 ? void 0 : _0.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
-                    basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.NUS + exports.LOGOUT_REDIRECT_URL), localAxios);
+                    basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.corsPrefix + exports.FIRST_URL.NUS + exports.LOGOUT_REDIRECT_URL), localAxios);
                     continue;
                 }
                 if ((_3 = (_2 = (_1 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _1 === void 0 ? void 0 : _1.documentElement) === null || _2 === void 0 ? void 0 : _2.outerHTML) === null || _3 === void 0 ? void 0 : _3.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
-                    basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.NUS + exports.LOGOUT_REDIRECT_URL_2), localAxios);
+                    basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.corsPrefix + exports.FIRST_URL.NUS + exports.LOGOUT_REDIRECT_URL_2), localAxios);
                     continue;
                 }
                 break;
