@@ -6,7 +6,7 @@ import axios,{
 export let corsPrefix='';
 export const FIRST_URL={
 	SMU:'https://www-lawnet-sg.libproxy.smu.edu.sg',
-	NUS:'https://www-lawnet-sg.lawproxy1.nus.edu.sg'
+	NUS:'https://www-lawnet-sg.libproxy1.nus.edu.sg'
 };
 const SMU_LIBPROXY_URL='http://libproxy.smu.edu.sg/login?url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access';
 const SMU_ADFS_LOGIN_PAGE='https://login2.smu.edu.sg/adfs/ls/';
@@ -19,9 +19,9 @@ const NUS_LOGIN_URL='https://libproxy1.nus.edu.sg/login';
 const NUS_LAWNET_URL='https://www.lawnet.sg/lawnet/ip-access';
 const NUS_VAFS_LOGIN_PAGE='https://vafs.nus.edu.sg/adfs/ls/';
 const NUS_VAFS_PREFIX='https://vafs.nus.edu.sg';
-const NUS_LAWPROXY_URL='https://www-lawnet-sg.lawproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
+const NUS_LAWPROXY_URL='https://www-lawnet-sg.libproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
 const NUS_IP_ACCESS_URL='http://www.lawnet.sg/lawnet/ip-access';
-const NUS_LOGIN_FORM_URL='https://proxylogin.nus.edu.sg/lawproxy1/public/login_form.asp';
+const NUS_LOGIN_FORM_URL='https://proxylogin.nus.edu.sg/libproxy1/public/login_form.asp';
 const NUS_INCORRECT_USER_ID_OR_PASSWORD='We are unable to authenticate the Userid and password that was entered. The Domain, NUSNET ID or the password entered could be invalid / mistyped.';
 const NUS_HELPDESK_URL='http://www.nus.edu.sg/comcen/gethelp';
 
