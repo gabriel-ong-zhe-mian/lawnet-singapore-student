@@ -137,6 +137,10 @@ function loginNUS(username, password, domain, localAxios) {
         let loginFormAction = (_k = (_j = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _j === void 0 ? void 0 : _j.querySelector('form#loginForm[action]')) === null || _k === void 0 ? void 0 : _k.getAttribute('action');
         if (!loginFormAction)
             throw new Error((_o = (_m = (_l = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _l === void 0 ? void 0 : _l.body) === null || _m === void 0 ? void 0 : _m.innerHTML) !== null && _o !== void 0 ? _o : 'Error retrieving NUS login form');
+        params = new URLSearchParams();
+        params.append('UserName', domain + '\\' + username);
+        params.append('Password', password);
+        params.append('AuthMethod', 'FormsAuthentication');
         let basicSearchRedirect = yield followRedirects(yield localAxios.post(NUS_VAFS_PREFIX + loginFormAction, params, { responseType: 'document' }), localAxios);
         if ((_r = (_q = (_p = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _p === void 0 ? void 0 : _p.documentElement) === null || _q === void 0 ? void 0 : _q.innerHTML) === null || _r === void 0 ? void 0 : _r.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.NUS + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
