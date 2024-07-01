@@ -28,6 +28,7 @@ const SMU_RESET_PASSWORD_URL = 'https://smu.sg/password';
 const NUS_LOGIN_URL = 'https://libproxy1.nus.edu.sg/login';
 const NUS_LAWNET_URL = 'https://www.lawnet.sg/lawnet/ip-access';
 const NUS_VAFS_LOGIN_PAGE = 'https://vafs.nus.edu.sg/adfs/ls/';
+const NUS_VAFS_PREFIX = 'https://vafs.nus.edu.sg';
 const NUS_LAWPROXY_URL = 'https://www-lawnet-sg.lawproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
 const NUS_IP_ACCESS_URL = 'http://www.lawnet.sg/lawnet/ip-access';
 const NUS_LOGIN_FORM_URL = 'https://proxylogin.nus.edu.sg/lawproxy1/public/login_form.asp';
@@ -136,7 +137,7 @@ function loginNUS(username, password, domain, localAxios) {
         let loginFormAction = (_k = (_j = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _j === void 0 ? void 0 : _j.querySelector('form#loginForm[action]')) === null || _k === void 0 ? void 0 : _k.getAttribute('action');
         if (!loginFormAction)
             throw new Error((_o = (_m = (_l = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _l === void 0 ? void 0 : _l.body) === null || _m === void 0 ? void 0 : _m.innerHTML) !== null && _o !== void 0 ? _o : 'Error retrieving NUS login form');
-        let basicSearchRedirect = yield followRedirects(yield localAxios.post(loginFormAction, params, { responseType: 'document' }), localAxios);
+        let basicSearchRedirect = yield followRedirects(yield localAxios.post(NUS_VAFS_PREFIX + loginFormAction, params, { responseType: 'document' }), localAxios);
         if ((_r = (_q = (_p = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _p === void 0 ? void 0 : _p.documentElement) === null || _q === void 0 ? void 0 : _q.innerHTML) === null || _r === void 0 ? void 0 : _r.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield followRedirects(yield localAxios.get(exports.FIRST_URL.NUS + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
             for (;;) {

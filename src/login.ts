@@ -18,6 +18,7 @@ const SMU_RESET_PASSWORD_URL='https://smu.sg/password';
 const NUS_LOGIN_URL='https://libproxy1.nus.edu.sg/login';
 const NUS_LAWNET_URL='https://www.lawnet.sg/lawnet/ip-access';
 const NUS_VAFS_LOGIN_PAGE='https://vafs.nus.edu.sg/adfs/ls/';
+const NUS_VAFS_PREFIX='https://vafs.nus.edu.sg';
 const NUS_LAWPROXY_URL='https://www-lawnet-sg.lawproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
 const NUS_IP_ACCESS_URL='http://www.lawnet.sg/lawnet/ip-access';
 const NUS_LOGIN_FORM_URL='https://proxylogin.nus.edu.sg/lawproxy1/public/login_form.asp';
@@ -175,7 +176,7 @@ async function loginNUS(
 	if(!loginFormAction)throw new Error(nusVafsLoginPage?.data?.body?.innerHTML??'Error retrieving NUS login form');
 	let basicSearchRedirect=await followRedirects(
 		await localAxios.post<Document>(
-			loginFormAction,
+			NUS_VAFS_PREFIX+loginFormAction,
 			params,
 			{responseType:'document'}
 		),
