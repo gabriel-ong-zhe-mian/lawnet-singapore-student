@@ -88,7 +88,6 @@ async function loginSMU(
 	//wrong username clause to be added
 	const microsoftDocument = microsoftLoginPage?.data;
 	const scriptTags = microsoftDocument.querySelectorAll('script');
-	console.log(scriptTags);
 	if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
 	let originalRequest='';
 	let flowToken='';
@@ -131,7 +130,8 @@ async function loginSMU(
 		),
 		localAxios
 	);
-	let redirectSMULoginForm=getCredentialRedirect?.data?.jsonData?.Credentials?.FederationRedirectUrl;
+	let redirectSMULoginForm=getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
+	console.log(redirectSMULoginForm);
 	if (!redirectSMULoginForm)throw new Error('No redirectSMULoginForm found');
 
 	//On to SMU login

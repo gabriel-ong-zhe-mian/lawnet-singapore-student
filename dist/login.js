@@ -58,7 +58,7 @@ function followRedirects(response, localAxios, corsPrefix) {
     });
 }
 function loginSMU(username, password, corsPrefix, domain, localAxios) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13;
     return __awaiter(this, void 0, void 0, function* () {
         let libproxyPage = yield followRedirects(yield localAxios.get(corsPrefix + SMU_LIBPROXY_URL, { responseType: 'document' }), localAxios);
         let libproxyAction = (_b = (_a = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('form[name=EZproxyForm]')) === null || _b === void 0 ? void 0 : _b.getAttribute('action');
@@ -79,7 +79,6 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         //wrong username clause to be added
         const microsoftDocument = microsoftLoginPage === null || microsoftLoginPage === void 0 ? void 0 : microsoftLoginPage.data;
         const scriptTags = microsoftDocument.querySelectorAll('script');
-        console.log(scriptTags);
         if (!scriptTags || scriptTags.length <= 0)
             throw new Error('No Script tag found in Microsoft HTML');
         let originalRequest = '';
@@ -116,7 +115,8 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         params.append('flowToken', flowToken);
         params.append('username', username);
         let getCredentialRedirect = yield followRedirects(yield localAxios.post(corsPrefix + urlGetCredentialType, params, { responseType: 'json' }), localAxios);
-        let redirectSMULoginForm = (_j = (_h = (_g = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _g === void 0 ? void 0 : _g.jsonData) === null || _h === void 0 ? void 0 : _h.Credentials) === null || _j === void 0 ? void 0 : _j.FederationRedirectUrl;
+        let redirectSMULoginForm = (_h = (_g = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _g === void 0 ? void 0 : _g.Credentials) === null || _h === void 0 ? void 0 : _h.FederationRedirectUrl;
+        console.log(redirectSMULoginForm);
         if (!redirectSMULoginForm)
             throw new Error('No redirectSMULoginForm found');
         //On to SMU login
@@ -125,16 +125,16 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         params.append('Password', password);
         params.append('AuthMethod', 'FormsAuthentication');
         let hiddenformRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + redirectSMULoginForm, params, { responseType: 'document' }), localAxios);
-        let hiddenform = (_l = (_k = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _k === void 0 ? void 0 : _k.querySelector('form[name="hiddenform"]')) === null || _l === void 0 ? void 0 : _l.getAttribute('action');
+        let hiddenform = (_k = (_j = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _j === void 0 ? void 0 : _j.querySelector('form[name="hiddenform"]')) === null || _k === void 0 ? void 0 : _k.getAttribute('action');
         if (!hiddenform)
             throw new Error('No intermediate hiddenform for SMU');
-        let wa = (_o = (_m = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _m === void 0 ? void 0 : _m.querySelector('input[name="wa"]')) === null || _o === void 0 ? void 0 : _o.getAttribute('value');
+        let wa = (_m = (_l = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _l === void 0 ? void 0 : _l.querySelector('input[name="wa"]')) === null || _m === void 0 ? void 0 : _m.getAttribute('value');
         if (!wa)
             throw new Error('No intermediate wa for SMU');
-        let wresult = (_q = (_p = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _p === void 0 ? void 0 : _p.querySelector('input[name="wresult"]')) === null || _q === void 0 ? void 0 : _q.getAttribute('value');
+        let wresult = (_p = (_o = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _o === void 0 ? void 0 : _o.querySelector('input[name="wresult"]')) === null || _p === void 0 ? void 0 : _p.getAttribute('value');
         if (!wresult)
             throw new Error('No intermediate wresult for SMU');
-        let wctx = (_s = (_r = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _r === void 0 ? void 0 : _r.querySelector('input[name="wctx"]')) === null || _s === void 0 ? void 0 : _s.getAttribute('value');
+        let wctx = (_r = (_q = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _q === void 0 ? void 0 : _q.querySelector('input[name="wctx"]')) === null || _r === void 0 ? void 0 : _r.getAttribute('value');
         if (!wctx)
             throw new Error('No intermediate wctx for SMU');
         params = new URLSearchParams();
@@ -142,37 +142,37 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         params.append('wresult', wresult);
         params.append('wctx', wctx);
         let shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenform, params, { responseType: 'document' }), localAxios);
-        let shibbolethFormActionSMU = (_u = (_t = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _t === void 0 ? void 0 : _t.querySelector('form[name="hiddenform"][action]')) === null || _u === void 0 ? void 0 : _u.getAttribute('action');
+        let shibbolethFormActionSMU = (_t = (_s = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _s === void 0 ? void 0 : _s.querySelector('form[name="hiddenform"][action]')) === null || _t === void 0 ? void 0 : _t.getAttribute('action');
         if (!shibbolethFormActionSMU)
             throw new Error('No Shibboleth form action for SMU');
-        let shibbolethSAMLResponseSMU = (_w = (_v = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _v === void 0 ? void 0 : _v.querySelector('input[name="SAMLResponse"]')) === null || _w === void 0 ? void 0 : _w.getAttribute('value');
+        let shibbolethSAMLResponseSMU = (_v = (_u = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _u === void 0 ? void 0 : _u.querySelector('input[name="SAMLResponse"]')) === null || _v === void 0 ? void 0 : _v.getAttribute('value');
         if (!shibbolethSAMLResponseSMU)
             throw new Error('No Shibboleth SAMLResponse for SMU');
-        let shibbolethRelayStateSMU = (_y = (_x = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _x === void 0 ? void 0 : _x.querySelector('input[name="RelayState"]')) === null || _y === void 0 ? void 0 : _y.getAttribute('value');
+        let shibbolethRelayStateSMU = (_x = (_w = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _w === void 0 ? void 0 : _w.querySelector('input[name="RelayState"]')) === null || _x === void 0 ? void 0 : _x.getAttribute('value');
         if (!shibbolethRelayStateSMU)
             throw new Error('No Shibboleth RelayState for SMU');
         params = new URLSearchParams();
         params.append('SAMLResponse', shibbolethSAMLResponseSMU);
         params.append('RelayState', shibbolethRelayStateSMU);
         let basicSearchRedirect = yield followRedirects(yield localAxios.post(corsPrefix + shibbolethFormActionSMU, params, { responseType: 'document' }), localAxios);
-        if ((_1 = (_0 = (_z = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _z === void 0 ? void 0 : _z.documentElement) === null || _0 === void 0 ? void 0 : _0.outerHTML) === null || _1 === void 0 ? void 0 : _1.includes(DUPLICATE_LOGIN)) {
+        if ((_0 = (_z = (_y = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _y === void 0 ? void 0 : _y.documentElement) === null || _z === void 0 ? void 0 : _z.outerHTML) === null || _0 === void 0 ? void 0 : _0.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield followRedirects(yield localAxios.get(corsPrefix + exports.FIRST_URL.SMU + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
             for (;;) {
-                if ((_4 = (_3 = (_2 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _2 === void 0 ? void 0 : _2.documentElement) === null || _3 === void 0 ? void 0 : _3.outerHTML) === null || _4 === void 0 ? void 0 : _4.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
+                if ((_3 = (_2 = (_1 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _1 === void 0 ? void 0 : _1.documentElement) === null || _2 === void 0 ? void 0 : _2.outerHTML) === null || _3 === void 0 ? void 0 : _3.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
                     basicSearchRedirect = yield followRedirects(yield localAxios.get(corsPrefix + exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL), localAxios);
                     continue;
                 }
-                if ((_7 = (_6 = (_5 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _5 === void 0 ? void 0 : _5.documentElement) === null || _6 === void 0 ? void 0 : _6.outerHTML) === null || _7 === void 0 ? void 0 : _7.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
+                if ((_6 = (_5 = (_4 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _4 === void 0 ? void 0 : _4.documentElement) === null || _5 === void 0 ? void 0 : _5.outerHTML) === null || _6 === void 0 ? void 0 : _6.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
                     basicSearchRedirect = yield followRedirects(yield localAxios.get(corsPrefix + exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL_2), localAxios);
                     continue;
                 }
                 break;
             }
         }
-        if ((_8 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _8 === void 0 ? void 0 : _8.querySelector('div.alert.alert-error'))
+        if ((_7 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _7 === void 0 ? void 0 : _7.querySelector('div.alert.alert-error'))
             throw new Error(basicSearchRedirect.data.querySelector('div.alert.alert-error').innerHTML);
-        if (!((_11 = (_10 = (_9 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _9 === void 0 ? void 0 : _9.querySelector('li.userInfo')) === null || _10 === void 0 ? void 0 : _10.innerHTML) === null || _11 === void 0 ? void 0 : _11.includes('<i>Welcome')))
-            throw new Error((_14 = (_13 = (_12 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _12 === void 0 ? void 0 : _12.body) === null || _13 === void 0 ? void 0 : _13.innerHTML) !== null && _14 !== void 0 ? _14 : 'Unable to reach welcome page');
+        if (!((_10 = (_9 = (_8 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _8 === void 0 ? void 0 : _8.querySelector('li.userInfo')) === null || _9 === void 0 ? void 0 : _9.innerHTML) === null || _10 === void 0 ? void 0 : _10.includes('<i>Welcome')))
+            throw new Error((_13 = (_12 = (_11 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _11 === void 0 ? void 0 : _11.body) === null || _12 === void 0 ? void 0 : _12.innerHTML) !== null && _13 !== void 0 ? _13 : 'Unable to reach welcome page');
         return localAxios;
     });
 }
