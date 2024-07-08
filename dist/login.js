@@ -113,7 +113,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     checkPhones = true;
                     isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
                     isCookieBannerShown = false;
-                    isFidoSupported = configObject.fIsFidoSupported;
+                    isFidoSupported = true;
                     country = configObject.country;
                     forceotclogin = false;
                     isExternalFederationDisallowed = false;
@@ -121,7 +121,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     isSignup = false;
                     isAccessPassSupported = configObject.fAccessPassSupported;
                     isQrCodePinSupported = configObject.fIsQrCodePinSupported;
-                    if (originalRequest && flowToken && urlGetCredentialType && isRemoteNGCSupported && isFidoSupported && country && isAccessPassSupported && isQrCodePinSupported)
+                    if (originalRequest && flowToken && urlGetCredentialType && isRemoteNGCSupported && country && isAccessPassSupported && isQrCodePinSupported)
                         break;
                 }
                 else {
@@ -137,8 +137,6 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
             throw new Error('No urlGetCredentialType found in Microsoft HTML');
         if (!isRemoteNGCSupported)
             throw new Error('No isRemoteNGCSupported found in Microsoft HTML');
-        if (!isFidoSupported)
-            throw new Error('No isFidoSupported found in Microsoft HTML');
         if (!country)
             throw new Error('No country found in Microsoft HTML');
         if (!isAccessPassSupported)

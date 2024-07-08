@@ -125,7 +125,7 @@ async function loginSMU(
 				checkPhones = true;
 				isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
 				isCookieBannerShown = false;
-				isFidoSupported = configObject.fIsFidoSupported;
+				isFidoSupported = true;
 				country = configObject.country;
 				forceotclogin = false;
 				isExternalFederationDisallowed = false;
@@ -135,7 +135,7 @@ async function loginSMU(
 				isQrCodePinSupported = configObject.fIsQrCodePinSupported;
 
 
-				if(originalRequest&&flowToken&&urlGetCredentialType&&isRemoteNGCSupported&&isFidoSupported&&country&&isAccessPassSupported&&isQrCodePinSupported)break;
+				if(originalRequest&&flowToken&&urlGetCredentialType&&isRemoteNGCSupported&&country&&isAccessPassSupported&&isQrCodePinSupported)break;
 			} else {
 				console.error('Failed to extract $Config object from the script content.')
 			}
@@ -146,7 +146,6 @@ async function loginSMU(
 	if(!flowToken)throw new Error('No flowToken found in Microsoft HTML');
 	if(!urlGetCredentialType)throw new Error('No urlGetCredentialType found in Microsoft HTML');
 	if(!isRemoteNGCSupported)throw new Error('No isRemoteNGCSupported found in Microsoft HTML')
-	if(!isFidoSupported)throw new Error('No isFidoSupported found in Microsoft HTML')
 	if(!country)throw new Error('No country found in Microsoft HTML')
 	if(!isAccessPassSupported)throw new Error('No isAccessPassSupported found in Microsoft HTML')
 	if(!isQrCodePinSupported)throw new Error('No isQrCodePinSupported found in Microsoft HTML')
