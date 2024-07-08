@@ -8,9 +8,8 @@ export const FIRST_URL={
 	SMU:'https://www-lawnet-sg.libproxy.smu.edu.sg',
 	NUS:'https://www-lawnet-sg.libproxy1.nus.edu.sg'
 };
-const SMU_LIBPROXY_URL='://libproxy.smu.edu.sg/login?url=https://www.lawnet.sg/lawnet/web/lawnet/ip-accesshttp';
+const SMU_LIBPROXY_URL='http://libproxy.smu.edu.sg/login?url=https://www.lawnet.sg/lawnet/web/lawnet/ip-access';
 const SMU_ADFS_LOGIN_PAGE='https://login2.smu.edu.sg/adfs/ls/';
-const SMU_MICROSOFT_LOGIN_URL='login.microsoftonline.com'
 const SMU_ADFS_LOGIN_PAGE_ROOT='https://login2.smu.edu.sg';
 const SMU_SHIBBOLETH_SSO_URL='https://login.libproxy.smu.edu.sg:443/Shibboleth.sso/SAML2/POST';
 const SMU_INCORRECT_USER_ID_OR_PASSWORD='Incorrect user ID or password. Type the correct user ID and password, and try again.';
@@ -64,6 +63,8 @@ async function loginSMU(
 		),
 		localAxios
 	);
+	let libproxyAction=libproxyPage?.data?.querySelector('form[name=EZproxyForm]')?.getAttribute('action');
+	if(!libproxyAction)throw new Error('No EZproxyForm on SMU login page');
 	let samlRequest=libproxyPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
 	if(!samlRequest)throw new Error('No SAMLRequest on SMU login page');
 	let relayState=libproxyPage?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
@@ -77,7 +78,7 @@ async function loginSMU(
 
 	let microsoftLoginPage=await followRedirects(
 		await localAxios.post<Document>(
-			corsPrefix+SMU_MICROSOFT_LOGIN_URL,
+			corsPrefix+libproxyAction,
 			params,
 			{responseType:'document'}
 		),
@@ -86,32 +87,36 @@ async function loginSMU(
 
 	//wrong username clause to be added
 	//Extracting values out of HTML Script using JSDOM
-	const microsoftLoginContent = new XMLSerializer().serializeToString(microsoftLoginPage.data);
-	const dom = new JSDOM(microsoftLoginContent);
-	const document = dom.window.document
-	const scriptTag = document.querySelector('script[type="text/javascript"]');
-	if (!scriptTag) throw new Error('No Script tag found in Microsoft HTML');
-	if (!scriptTag.textContent) throw new Error('Script Tag has no text content');
+	const microsoftLoginContent = microsoftLoginPage?.data?.documentElement?.innerHTML;
+	const scriptTags = document.querySelectorAll('script[type="text/javascript"]');
+	if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
+	let originalRequest='';
+	let flowToken='';
+	let urlGetCredentialType='';
+	for(let scriptTag of scriptTags){
+		if (!scriptTag.textContent) continue;
 
-	//Declaring variables for extracting out of Script and Config 
-	let originalRequest: string;
-	let flowToken: string;
-	let urlGetCredentialType: string;
+		//Declaring variables for extracting out of Script and Config 
 
-	if (scriptTag && scriptTag.textContent) {
-		const scriptContent = scriptTag.textContent;
-		const configMatch = scriptContent.match(/\$Config\s*=\s*(\{[\s\S]*?\});/);
+		if (scriptTag && scriptTag.textContent) {
+			const scriptContent = scriptTag.textContent;
+			const configMatch = scriptContent.match(/\$Config\s*=\s*(\{[\s\S]*?\});/);
 
-		if (configMatch && configMatch[1]) {
-			const configObject = JSON.parse(configMatch[1]);
-			originalRequest = configObject.sCtx;
-        	flowToken = configObject.sFT;
-			urlGetCredentialType = configObject.urlGetCredentialType;
-
-		} else {
-			console.error('Failed to extract $Config object from the script content.')
+			if (configMatch && configMatch[1]) {
+				const configObject = JSON.parse(configMatch[1]);
+				originalRequest = configObject.sCtx;
+				flowToken = configObject.sFT;
+				urlGetCredentialType = configObject.urlGetCredentialType;
+				if(originalRequest&&flowToken&&urlGetCredentialType)break;
+			} else {
+				console.error('Failed to extract $Config object from the script content.')
+			}
 		}
 	}
+
+	if(!originalRequest)throw new Error('No originalRequest found in Microsoft HTML');
+	if(!flowToken)throw new Error('No flowToken found in Microsoft HTML');
+	if(!urlGetCredentialType)throw new Error('No urlGetCredentialType found in Microsoft HTML');
 
 	params=new URLSearchParams();
 	params.append('originalRequest', originalRequest);
@@ -135,9 +140,32 @@ async function loginSMU(
 	params.append('Password',password);
 	params.append('AuthMethod','FormsAuthentication');
 
-	let shibbolethRedirectSMU=await followRedirects(
+	let hiddenformRedirectSMU=await followRedirects(
 		await localAxios.post<Document>(
 			corsPrefix+redirectSMULoginForm,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
+	);
+
+	let hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
+	if(!hiddenform)throw new Error('No intermediate hiddenform for SMU');
+	let wa=hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
+	if(!wa)throw new Error('No intermediate wa for SMU');
+	let wresult=hiddenformRedirectSMU?.data?.querySelector('input[name="wresult"]')?.getAttribute('value');
+	if(!wresult)throw new Error('No intermediate wresult for SMU');
+	let wctx=hiddenformRedirectSMU?.data?.querySelector('input[name="wctx"]')?.getAttribute('value');
+	if(!wctx)throw new Error('No intermediate wctx for SMU');
+
+	params=new URLSearchParams();
+	params.append('wa', wa);
+	params.append('wresult', wresult);
+	params.append('wctx', wctx);
+
+	let shibbolethRedirectSMU=await followRedirects(
+		await localAxios.post<Document>(
+			corsPrefix+hiddenform,
 			params,
 			{responseType:'document'}
 		),
