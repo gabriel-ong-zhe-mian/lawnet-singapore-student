@@ -116,7 +116,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         params.append('username', username);
         let getCredentialRedirect = yield followRedirects(yield localAxios.post(corsPrefix + urlGetCredentialType, params, { responseType: 'json' }), localAxios);
         let redirectSMULoginForm = (_h = (_g = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _g === void 0 ? void 0 : _g.Credentials) === null || _h === void 0 ? void 0 : _h.FederationRedirectUrl;
-        console.log(redirectSMULoginForm);
+        console.log(getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data);
         if (!redirectSMULoginForm)
             throw new Error('No redirectSMULoginForm found');
         //On to SMU login

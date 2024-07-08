@@ -131,7 +131,7 @@ async function loginSMU(
 		localAxios
 	);
 	let redirectSMULoginForm=getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
-	console.log(redirectSMULoginForm);
+	console.log(getCredentialRedirect?.data);
 	if (!redirectSMULoginForm)throw new Error('No redirectSMULoginForm found');
 
 	//On to SMU login
