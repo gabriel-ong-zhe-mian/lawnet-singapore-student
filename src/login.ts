@@ -92,6 +92,21 @@ async function loginSMU(
 	let originalRequest='';
 	let flowToken='';
 	let urlGetCredentialType='';
+	let isOtherIdpSupported: boolean;
+	let checkPhones: boolean;
+	let isRemoteNGCSupported: boolean;
+	let isCookieBannerShown: boolean;
+	let isFidoSupported: boolean;
+	let country='';
+	let forceotclogin: boolean;
+	let isExternalFederationDisallowed: boolean;
+	let isRemoteConnectSupported: boolean;
+	let federationFlags=0;
+	let isSignup: boolean;
+	let isAccessPassSupported: boolean;
+	let isQrCodePinSupported: boolean;
+
+
 	for(let scriptTag of scriptTags){
 		if (!scriptTag.textContent) continue;
 
@@ -106,7 +121,21 @@ async function loginSMU(
 				originalRequest = configObject.sCtx;
 				flowToken = configObject.sFT;
 				urlGetCredentialType = configObject.urlGetCredentialType;
-				if(originalRequest&&flowToken&&urlGetCredentialType)break;
+				isOtherIdpSupported = true;
+				checkPhones = true;
+				isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
+				isCookieBannerShown = false;
+				isFidoSupported = configObject.fIsFidoSupported;
+				country = configObject.country;
+				forceotclogin = false;
+				isExternalFederationDisallowed = false;
+				isRemoteConnectSupported = false;
+				isSignup = false;
+				isAccessPassSupported = configObject.fAccessPassSupported;
+				isQrCodePinSupported = configObject.fIsQrCodePinSupported;
+
+
+				if(originalRequest&&flowToken&&urlGetCredentialType&&isRemoteNGCSupported&&isFidoSupported&&country&&isAccessPassSupported&&isQrCodePinSupported)break;
 			} else {
 				console.error('Failed to extract $Config object from the script content.')
 			}
@@ -116,17 +145,38 @@ async function loginSMU(
 	if(!originalRequest)throw new Error('No originalRequest found in Microsoft HTML');
 	if(!flowToken)throw new Error('No flowToken found in Microsoft HTML');
 	if(!urlGetCredentialType)throw new Error('No urlGetCredentialType found in Microsoft HTML');
+	if(!isRemoteNGCSupported)throw new Error('No isRemoteNGCSupported found in Microsoft HTML')
+	if(!isFidoSupported)throw new Error('No isFidoSupported found in Microsoft HTML')
+	if(!country)throw new Error('No country found in Microsoft HTML')
+	if(!isAccessPassSupported)throw new Error('No isAccessPassSupported found in Microsoft HTML')
+	if(!isQrCodePinSupported)throw new Error('No isQrCodePinSupported found in Microsoft HTML')
 
-	params=new URLSearchParams();
-	params.append('originalRequest', originalRequest);
-	params.append('flowToken', flowToken);
-	params.append('username', username);
+	let jsonParams={
+		username,
+		isOtherIdpSupported,
+		checkPhones,
+		isRemoteNGCSupported,
+		isCookieBannerShown,
+		isFidoSupported,
+		originalRequest,
+		country,
+		forceotclogin,
+		isExternalFederationDisallowed,
+		isRemoteConnectSupported,
+		federationFlags,
+		isSignup,
+		flowToken,
+		isAccessPassSupported,
+		isQrCodePinSupported
+	};
 
 	let getCredentialRedirect=await followRedirects(
 		await localAxios.post<any>(
 			corsPrefix+urlGetCredentialType,
-			params,
-			{responseType:'json'}
+			jsonParams,
+			{
+				responseType:'json'
+			}
 		),
 		localAxios
 	);

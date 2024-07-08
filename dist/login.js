@@ -84,6 +84,19 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         let originalRequest = '';
         let flowToken = '';
         let urlGetCredentialType = '';
+        let isOtherIdpSupported;
+        let checkPhones;
+        let isRemoteNGCSupported;
+        let isCookieBannerShown;
+        let isFidoSupported;
+        let country = '';
+        let forceotclogin;
+        let isExternalFederationDisallowed;
+        let isRemoteConnectSupported;
+        let federationFlags = 0;
+        let isSignup;
+        let isAccessPassSupported;
+        let isQrCodePinSupported;
         for (let scriptTag of scriptTags) {
             if (!scriptTag.textContent)
                 continue;
@@ -96,7 +109,19 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     originalRequest = configObject.sCtx;
                     flowToken = configObject.sFT;
                     urlGetCredentialType = configObject.urlGetCredentialType;
-                    if (originalRequest && flowToken && urlGetCredentialType)
+                    isOtherIdpSupported = true;
+                    checkPhones = true;
+                    isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
+                    isCookieBannerShown = false;
+                    isFidoSupported = configObject.fIsFidoSupported;
+                    country = configObject.country;
+                    forceotclogin = false;
+                    isExternalFederationDisallowed = false;
+                    isRemoteConnectSupported = false;
+                    isSignup = false;
+                    isAccessPassSupported = configObject.fAccessPassSupported;
+                    isQrCodePinSupported = configObject.fIsQrCodePinSupported;
+                    if (originalRequest && flowToken && urlGetCredentialType && isRemoteNGCSupported && isFidoSupported && country && isAccessPassSupported && isQrCodePinSupported)
                         break;
                 }
                 else {
@@ -110,11 +135,37 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
             throw new Error('No flowToken found in Microsoft HTML');
         if (!urlGetCredentialType)
             throw new Error('No urlGetCredentialType found in Microsoft HTML');
-        params = new URLSearchParams();
-        params.append('originalRequest', originalRequest);
-        params.append('flowToken', flowToken);
-        params.append('username', username);
-        let getCredentialRedirect = yield followRedirects(yield localAxios.post(corsPrefix + urlGetCredentialType, params, { responseType: 'json' }), localAxios);
+        if (!isRemoteNGCSupported)
+            throw new Error('No isRemoteNGCSupported found in Microsoft HTML');
+        if (!isFidoSupported)
+            throw new Error('No isFidoSupported found in Microsoft HTML');
+        if (!country)
+            throw new Error('No country found in Microsoft HTML');
+        if (!isAccessPassSupported)
+            throw new Error('No isAccessPassSupported found in Microsoft HTML');
+        if (!isQrCodePinSupported)
+            throw new Error('No isQrCodePinSupported found in Microsoft HTML');
+        let jsonParams = {
+            username,
+            isOtherIdpSupported,
+            checkPhones,
+            isRemoteNGCSupported,
+            isCookieBannerShown,
+            isFidoSupported,
+            originalRequest,
+            country,
+            forceotclogin,
+            isExternalFederationDisallowed,
+            isRemoteConnectSupported,
+            federationFlags,
+            isSignup,
+            flowToken,
+            isAccessPassSupported,
+            isQrCodePinSupported
+        };
+        let getCredentialRedirect = yield followRedirects(yield localAxios.post(corsPrefix + urlGetCredentialType, jsonParams, {
+            responseType: 'json'
+        }), localAxios);
         let redirectSMULoginForm = (_h = (_g = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _g === void 0 ? void 0 : _g.Credentials) === null || _h === void 0 ? void 0 : _h.FederationRedirectUrl;
         console.log(getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data);
         if (!redirectSMULoginForm)
