@@ -204,6 +204,38 @@ async function loginSMU(
 		localAxios
 	);
 
+	//proxy fix starts here
+	let hiddenform='';
+
+	let wa='';
+	let wresult='';
+	let wctx='';
+
+	params=new URLSearchParams();
+
+
+	hiddenform=hiddenformRedirectSMU?.data?.querySelector('form#loginForm[action]')?.getAttribute('action');
+
+	if(!hiddenform) {
+		hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
+		if(!hiddenform)throw new Error('No intermediate hiddenform for SMU');
+		wa=hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
+		if(!wa)throw new Error('No intermediate wa for SMU');
+		wresult=hiddenformRedirectSMU?.data?.querySelector('input[name="wresult"]')?.getAttribute('value');
+		if(!wresult)throw new Error('No intermediate wresult for SMU');
+		wctx=hiddenformRedirectSMU?.data?.querySelector('input[name="wctx"]')?.getAttribute('value');
+		if(!wctx)throw new Error('No intermediate wctx for SMU');
+		params.append('wa', wa);
+		params.append('wresult', wresult);
+		params.append('wctx', wctx);
+	} else {
+		params.append('UserName', username);
+		params.append('Password', password);
+		params.append('AuthMethod','FormsAuthentication');
+	}
+
+
+	/*
 	let hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
 	if(!hiddenform)throw new Error('No intermediate hiddenform for SMU');
 	let wa=hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
@@ -212,11 +244,11 @@ async function loginSMU(
 	if(!wresult)throw new Error('No intermediate wresult for SMU');
 	let wctx=hiddenformRedirectSMU?.data?.querySelector('input[name="wctx"]')?.getAttribute('value');
 	if(!wctx)throw new Error('No intermediate wctx for SMU');
-
 	params=new URLSearchParams();
 	params.append('wa', wa);
 	params.append('wresult', wresult);
 	params.append('wctx', wctx);
+	*/
 
 	let shibbolethRedirectSMU=await followRedirects(
 		await localAxios.post<Document>(
