@@ -89,31 +89,6 @@ async function loginSMU(
 	//wrong username clause to be added
 	const microsoftDocument = microsoftLoginPage?.data;
 
-	let microsoftDocumentProxyAction=microsoftDocument?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
-	let microsoftDocumentProxySAML=microsoftDocument?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
-	let microsoftDocumentProxyRelayState=microsoftDocument?.querySelector('input[name="RelayState"]')?.getAttribute('value');
-	
-	params=new URLSearchParams();
-	params.append('SAMLRequest',microsoftDocumentProxySAML);
-	params.append('RelayState',microsoftDocumentProxyRelayState);
-	let getCredentialRedirect=await followRedirects(
-		await localAxios.post<Document>(
-			corsPrefix+microsoftDocumentProxyAction,
-			params,
-			{
-				responseType:'document'
-			}
-		),
-		localAxios
-	);
-
-	console.log(getCredentialRedirect.data)
-	let redirectSMULoginForm=microsoftDocument?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
-	let redirectSMULoginFormSAML=microsoftDocument?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
-	let redirectSMULoginFormRelay=microsoftDocument?.querySelector('input[name="RelayState"]')?.getAttribute('value');
-
-
-/* 
 	const scriptTags = microsoftDocument.querySelectorAll('script');
 	if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
 	let originalRequest='';
@@ -212,9 +187,9 @@ async function loginSMU(
 	console.log(getCredentialRedirect?.data);
 	if (!redirectSMULoginForm)throw new Error('No redirectSMULoginForm found');
 
-	*/
 
 	//On to SMU login
+
 	params=new URLSearchParams();
 	params.append('UserName', username);
 	params.append('Password',password);
