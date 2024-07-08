@@ -181,6 +181,10 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         let wctx = '';
         params = new URLSearchParams();
         hiddenform = (_k = (_j = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _j === void 0 ? void 0 : _j.querySelector('form#loginForm[action]')) === null || _k === void 0 ? void 0 : _k.getAttribute('action');
+        if (!hiddenform.includes('://')) {
+            let url = new URL(redirectSMULoginForm);
+            hiddenform = url.protocol + '://' + url.host + (hiddenform.startsWith('/') ? '' : '/') + hiddenform;
+        }
         if (!hiddenform) {
             hiddenform = (_m = (_l = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _l === void 0 ? void 0 : _l.querySelector('form[name="hiddenform"]')) === null || _m === void 0 ? void 0 : _m.getAttribute('action');
             if (!hiddenform)
