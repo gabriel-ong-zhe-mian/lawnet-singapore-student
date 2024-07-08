@@ -97,15 +97,21 @@ async function loginSMU(
 	params.append('SAMLRequest',microsoftDocumentProxySAML);
 	params.append('RelayState',microsoftDocumentProxyRelayState);
 	let getCredentialRedirect=await followRedirects(
-		await localAxios.post<any>(
+		await localAxios.post<Document>(
 			corsPrefix+microsoftDocumentProxyAction,
 			params,
 			{
-				responseType:'json'
+				responseType:'document'
 			}
 		),
 		localAxios
 	);
+
+	console.log(getCredentialRedirect.data)
+	let redirectSMULoginForm=microsoftDocument?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
+	let redirectSMULoginFormSAML=microsoftDocument?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+	let redirectSMULoginFormRelay=microsoftDocument?.querySelector('input[name="RelayState"]')?.getAttribute('value');
+
 
 /* 
 	const scriptTags = microsoftDocument.querySelectorAll('script');
@@ -201,10 +207,12 @@ async function loginSMU(
 		),
 		localAxios
 	);
-	*/
+	
 	let redirectSMULoginForm=getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
 	console.log(getCredentialRedirect?.data);
 	if (!redirectSMULoginForm)throw new Error('No redirectSMULoginForm found');
+
+	*/
 
 	//On to SMU login
 	params=new URLSearchParams();
