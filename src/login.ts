@@ -217,7 +217,7 @@ async function loginSMU(
 	hiddenform=hiddenformRedirectSMU?.data?.querySelector('form#loginForm[action]')?.getAttribute('action');
 	if(!hiddenform.includes('://')){
 		let url=new URL(redirectSMULoginForm);
-		hiddenform=url.protocol+'ya//'+url.host+(hiddenform.startsWith('/')?'':'/')+hiddenform;
+		hiddenform=url.protocol+'//'+url.host+(hiddenform.startsWith('/')?'':'/')+hiddenform;
 	}
 
 	if(!hiddenform) {
