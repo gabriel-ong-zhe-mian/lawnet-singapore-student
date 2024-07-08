@@ -87,8 +87,8 @@ async function loginSMU(
 
 	//wrong username clause to be added
 	//Extracting values out of HTML Script using JSDOM
-	const microsoftLoginContent = microsoftLoginPage?.data?.documentElement;
-	const scriptTags = microsoftLoginContent.querySelectorAll('script[type="text/javascript"]');
+	const microsoftDocument = microsoftLoginPage?.data;
+	const scriptTags = microsoftDocument.querySelectorAll('script[type="text/javascript"]');
 	if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
 	let originalRequest='';
 	let flowToken='';
