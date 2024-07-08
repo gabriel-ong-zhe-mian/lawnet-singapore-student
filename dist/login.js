@@ -77,9 +77,9 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         params.append('back', '2');
         let microsoftLoginPage = yield followRedirects(yield localAxios.post(corsPrefix + libproxyAction, params, { responseType: 'document' }), localAxios);
         //wrong username clause to be added
-        //Extracting values out of HTML Script using JSDOM
         const microsoftDocument = microsoftLoginPage === null || microsoftLoginPage === void 0 ? void 0 : microsoftLoginPage.data;
-        const scriptTags = microsoftDocument.querySelectorAll('script[type="text/javascript"]');
+        const scriptTags = microsoftDocument.querySelectorAll('script');
+        console.log(scriptTags);
         if (!scriptTags || scriptTags.length <= 0)
             throw new Error('No Script tag found in Microsoft HTML');
         let originalRequest = '';
