@@ -2,6 +2,7 @@ import axios,{
 	AxiosInstance,
 	AxiosResponse
 }from 'axios';
+import { JSDOM } from 'jsdom';
 
 export const FIRST_URL={
 	SMU:'https://www-lawnet-sg.libproxy.smu.edu.sg',
@@ -62,14 +63,214 @@ async function loginSMU(
 		),
 		localAxios
 	);
+	let libproxyAction=libproxyPage?.data?.querySelector('form[name=EZproxyForm]')?.getAttribute('action');
+	if(!libproxyAction)throw new Error('No EZproxyForm on SMU login page');
 	let samlRequest=libproxyPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
+	if(!samlRequest)throw new Error('No SAMLRequest on SMU login page');
 	let relayState=libproxyPage?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
-	if(!samlRequest||!relayState)return localAxios; //already authenticated
+	if(!relayState)throw new Error('No RelayState on SMU login page');
+	// if(!samlRequest||!relayState)return localAxios; //already authenticated
+
 	let params=new URLSearchParams();
 	params.append('SAMLRequest',samlRequest);
 	params.append('RelayState',relayState);
 	params.append('back','2');
-	let adfsLoginPage1=await followRedirects(
+
+	let microsoftLoginPage=await followRedirects(
+		await localAxios.post<Document>(
+			corsPrefix+libproxyAction,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
+	)
+
+	//wrong username clause to be added
+	const microsoftDocument = microsoftLoginPage?.data;
+	const scriptTags = microsoftDocument.querySelectorAll('script');
+	if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
+	let originalRequest='';
+	let flowToken='';
+	let urlGetCredentialType='';
+	let isOtherIdpSupported: boolean;
+	let checkPhones: boolean;
+	let isRemoteNGCSupported: boolean;
+	let isCookieBannerShown: boolean;
+	let isFidoSupported: boolean;
+	let country='';
+	let forceotclogin: boolean;
+	let isExternalFederationDisallowed: boolean;
+	let isRemoteConnectSupported: boolean;
+	let federationFlags=0;
+	let isSignup: boolean;
+	let isAccessPassSupported: boolean;
+	let isQrCodePinSupported: boolean;
+
+
+	for(let scriptTag of scriptTags){
+		if (!scriptTag.textContent) continue;
+
+		//Declaring variables for extracting out of Script and Config 
+
+		if (scriptTag && scriptTag.textContent) {
+			const scriptContent = scriptTag.textContent;
+			const configMatch = scriptContent.match(/\$Config\s*=\s*(\{[\s\S]*?\});/);
+
+			if (configMatch && configMatch[1]) {
+				const configObject = JSON.parse(configMatch[1]);
+				originalRequest = configObject.sCtx;
+				flowToken = configObject.sFT;
+				urlGetCredentialType = configObject.urlGetCredentialType;
+				isOtherIdpSupported = true;
+				checkPhones = true;
+				isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
+				isCookieBannerShown = false;
+				isFidoSupported = true;
+				country = configObject.country;
+				forceotclogin = false;
+				isExternalFederationDisallowed = false;
+				isRemoteConnectSupported = false;
+				isSignup = false;
+				isAccessPassSupported = configObject.fAccessPassSupported;
+				isQrCodePinSupported = configObject.fIsQrCodePinSupported;
+
+
+				if(originalRequest&&flowToken&&urlGetCredentialType&&isRemoteNGCSupported&&country&&isAccessPassSupported&&isQrCodePinSupported)break;
+			} else {
+				console.error('Failed to extract $Config object from the script content.')
+			}
+		}
+	}
+
+	if(!originalRequest)throw new Error('No originalRequest found in Microsoft HTML');
+	if(!flowToken)throw new Error('No flowToken found in Microsoft HTML');
+	if(!urlGetCredentialType)throw new Error('No urlGetCredentialType found in Microsoft HTML');
+	if(!isRemoteNGCSupported)throw new Error('No isRemoteNGCSupported found in Microsoft HTML')
+	if(!country)throw new Error('No country found in Microsoft HTML')
+	if(!isAccessPassSupported)throw new Error('No isAccessPassSupported found in Microsoft HTML')
+	if(!isQrCodePinSupported)throw new Error('No isQrCodePinSupported found in Microsoft HTML')
+
+	let jsonParams={
+		username,
+		isOtherIdpSupported,
+		checkPhones,
+		isRemoteNGCSupported,
+		isCookieBannerShown,
+		isFidoSupported,
+		originalRequest,
+		country,
+		forceotclogin,
+		isExternalFederationDisallowed,
+		isRemoteConnectSupported,
+		federationFlags,
+		isSignup,
+		flowToken,
+		isAccessPassSupported,
+		isQrCodePinSupported
+	};
+
+	let getCredentialRedirect=await followRedirects(
+		await localAxios.post<any>(
+			corsPrefix+urlGetCredentialType,
+			jsonParams,
+			{
+				responseType:'json'
+			}
+		),
+		localAxios
+	);
+	let redirectSMULoginForm=getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
+	console.log(getCredentialRedirect?.data);
+	if (!redirectSMULoginForm)throw new Error('No redirectSMULoginForm found');
+
+	//On to SMU login
+	params=new URLSearchParams();
+	params.append('UserName', username);
+	params.append('Password',password);
+	params.append('AuthMethod','FormsAuthentication');
+
+	let hiddenformRedirectSMU=await followRedirects(
+		await localAxios.post<Document>(
+			corsPrefix+redirectSMULoginForm,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
+	);
+
+	let hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
+	if(!hiddenform)throw new Error('No intermediate hiddenform for SMU');
+	let wa=hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
+	if(!wa)throw new Error('No intermediate wa for SMU');
+	let wresult=hiddenformRedirectSMU?.data?.querySelector('input[name="wresult"]')?.getAttribute('value');
+	if(!wresult)throw new Error('No intermediate wresult for SMU');
+	let wctx=hiddenformRedirectSMU?.data?.querySelector('input[name="wctx"]')?.getAttribute('value');
+	if(!wctx)throw new Error('No intermediate wctx for SMU');
+
+	params=new URLSearchParams();
+	params.append('wa', wa);
+	params.append('wresult', wresult);
+	params.append('wctx', wctx);
+
+	let shibbolethRedirectSMU=await followRedirects(
+		await localAxios.post<Document>(
+			corsPrefix+hiddenform,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
+	);
+
+	let shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
+	if(!shibbolethFormActionSMU)throw new Error('No Shibboleth form action for SMU');
+	let shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+	if(!shibbolethSAMLResponseSMU)throw new Error('No Shibboleth SAMLResponse for SMU');
+	let shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
+	if(!shibbolethRelayStateSMU)throw new Error('No Shibboleth RelayState for SMU');
+
+	params=new URLSearchParams();
+	params.append('SAMLResponse',shibbolethSAMLResponseSMU);
+	params.append('RelayState',shibbolethRelayStateSMU);
+	let basicSearchRedirect=await followRedirects(
+		await localAxios.post<Document>(
+			corsPrefix+shibbolethFormActionSMU,
+			params,
+			{responseType:'document'}
+		),
+		localAxios
+	);
+
+	if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(DUPLICATE_LOGIN)){
+		basicSearchRedirect=await followRedirects(
+			await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+DUPLICATE_LOGIN_REMOVE_URL),
+			localAxios
+		);
+		for(;;){
+			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT)){
+				basicSearchRedirect=await followRedirects(
+					await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+LOGOUT_REDIRECT_URL),
+					localAxios
+				);
+				continue;
+			}
+			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT_2)){
+				basicSearchRedirect=await followRedirects(
+					await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+LOGOUT_REDIRECT_URL_2),
+					localAxios
+				);
+				continue;
+			}
+			break;
+		}
+	}
+	if(basicSearchRedirect?.data?.querySelector('div.alert.alert-error'))throw new Error(basicSearchRedirect.data.querySelector('div.alert.alert-error').innerHTML);
+	if(!basicSearchRedirect?.data?.querySelector('li.userInfo')?.innerHTML?.includes('<i>Welcome'))throw new Error(basicSearchRedirect?.data?.body?.innerHTML??'Unable to reach welcome page');
+	return localAxios;
+}
+
+	// Old SMU manual redirects
+
+	/**let adfsLoginPage1=await followRedirects(
 		await localAxios.post<Document>(
 			corsPrefix+SMU_ADFS_LOGIN_PAGE,
 			params,
@@ -111,33 +312,9 @@ async function loginSMU(
 		),
 		localAxios
 	);
-	if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(DUPLICATE_LOGIN)){
-		basicSearchRedirect=await followRedirects(
-			await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+DUPLICATE_LOGIN_REMOVE_URL),
-			localAxios
-		);
-		for(;;){
-			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT)){
-				basicSearchRedirect=await followRedirects(
-					await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+LOGOUT_REDIRECT_URL),
-					localAxios
-				);
-				continue;
-			}
-			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT_2)){
-				basicSearchRedirect=await followRedirects(
-					await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+LOGOUT_REDIRECT_URL_2),
-					localAxios
-				);
-				continue;
-			}
-			break;
-		}
-	}
-	if(basicSearchRedirect?.data?.querySelector('div.alert.alert-error'))throw new Error(basicSearchRedirect.data.querySelector('div.alert.alert-error').innerHTML);
-	if(!basicSearchRedirect?.data?.querySelector('li.userInfo')?.innerHTML?.includes('<i>Welcome'))throw new Error(basicSearchRedirect?.data?.body?.innerHTML??'Unable to reach welcome page');
-	return localAxios;
-}
+	**/
+
+
 
 async function loginNUS(
 	username:string,

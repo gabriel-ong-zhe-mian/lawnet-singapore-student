@@ -24,7 +24,8 @@
 	"author": "Wilson Foo Yu Kang <wilson.foo@customautosys.com>",
 	"license": "MPL-2.0",
 	"dependencies": {
-		"axios": "^1.7.2"
+		"axios": "^1.7.2",
+		"jsdom": "^24.1.0"
 	},
 	"devDependencies": {
 		"typescript": "^4.7.4"

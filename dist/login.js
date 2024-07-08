@@ -58,63 +58,217 @@ function followRedirects(response, localAxios, corsPrefix) {
     });
 }
 function loginSMU(username, password, corsPrefix, domain, localAxios) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13;
     return __awaiter(this, void 0, void 0, function* () {
         let libproxyPage = yield followRedirects(yield localAxios.get(corsPrefix + SMU_LIBPROXY_URL, { responseType: 'document' }), localAxios);
-        let samlRequest = (_b = (_a = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('input[name="SAMLRequest"]')) === null || _b === void 0 ? void 0 : _b.getAttribute('value');
-        let relayState = (_d = (_c = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _c === void 0 ? void 0 : _c.querySelector('input[name="RelayState"]')) === null || _d === void 0 ? void 0 : _d.getAttribute('value');
-        if (!samlRequest || !relayState)
-            return localAxios; //already authenticated
+        let libproxyAction = (_b = (_a = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('form[name=EZproxyForm]')) === null || _b === void 0 ? void 0 : _b.getAttribute('action');
+        if (!libproxyAction)
+            throw new Error('No EZproxyForm on SMU login page');
+        let samlRequest = (_d = (_c = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _c === void 0 ? void 0 : _c.querySelector('input[name="SAMLRequest"]')) === null || _d === void 0 ? void 0 : _d.getAttribute('value');
+        if (!samlRequest)
+            throw new Error('No SAMLRequest on SMU login page');
+        let relayState = (_f = (_e = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _e === void 0 ? void 0 : _e.querySelector('input[name="RelayState"]')) === null || _f === void 0 ? void 0 : _f.getAttribute('value');
+        if (!relayState)
+            throw new Error('No RelayState on SMU login page');
+        // if(!samlRequest||!relayState)return localAxios; //already authenticated
         let params = new URLSearchParams();
         params.append('SAMLRequest', samlRequest);
         params.append('RelayState', relayState);
         params.append('back', '2');
-        let adfsLoginPage1 = yield followRedirects(yield localAxios.post(corsPrefix + SMU_ADFS_LOGIN_PAGE, params, { responseType: 'document' }), localAxios);
-        let adfsLoginPage2;
-        while (((_f = (_e = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _e === void 0 ? void 0 : _e.querySelector('form[name="hiddenform"]')) === null || _f === void 0 ? void 0 : _f.getAttribute('action')) !== SMU_SHIBBOLETH_SSO_URL) {
-            let action = (_h = (_g = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _g === void 0 ? void 0 : _g.querySelector('form#loginForm')) === null || _h === void 0 ? void 0 : _h.getAttribute('action');
-            if (!action)
-                throw new Error((_k = (_j = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _j === void 0 ? void 0 : _j.body) === null || _k === void 0 ? void 0 : _k.innerHTML);
-            let adfsLoginPageUrl2 = SMU_ADFS_LOGIN_PAGE_ROOT + action;
-            params = new URLSearchParams();
-            params.append('UserName', username);
-            params.append('Password', password);
-            params.append('AuthMethod', 'FormsAuthentication');
-            adfsLoginPage1 = yield followRedirects(yield localAxios.post(corsPrefix + adfsLoginPageUrl2, params, { responseType: 'document' }), localAxios);
-            if ((_o = (_m = (_l = adfsLoginPage1 === null || adfsLoginPage1 === void 0 ? void 0 : adfsLoginPage1.data) === null || _l === void 0 ? void 0 : _l.documentElement) === null || _m === void 0 ? void 0 : _m.outerHTML) === null || _o === void 0 ? void 0 : _o.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))
-                throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset your password</a>.');
-            ;
+        let microsoftLoginPage = yield followRedirects(yield localAxios.post(corsPrefix + libproxyAction, params, { responseType: 'document' }), localAxios);
+        //wrong username clause to be added
+        const microsoftDocument = microsoftLoginPage === null || microsoftLoginPage === void 0 ? void 0 : microsoftLoginPage.data;
+        const scriptTags = microsoftDocument.querySelectorAll('script');
+        if (!scriptTags || scriptTags.length <= 0)
+            throw new Error('No Script tag found in Microsoft HTML');
+        let originalRequest = '';
+        let flowToken = '';
+        let urlGetCredentialType = '';
+        let isOtherIdpSupported;
+        let checkPhones;
+        let isRemoteNGCSupported;
+        let isCookieBannerShown;
+        let isFidoSupported;
+        let country = '';
+        let forceotclogin;
+        let isExternalFederationDisallowed;
+        let isRemoteConnectSupported;
+        let federationFlags = 0;
+        let isSignup;
+        let isAccessPassSupported;
+        let isQrCodePinSupported;
+        for (let scriptTag of scriptTags) {
+            if (!scriptTag.textContent)
+                continue;
+            //Declaring variables for extracting out of Script and Config 
+            if (scriptTag && scriptTag.textContent) {
+                const scriptContent = scriptTag.textContent;
+                const configMatch = scriptContent.match(/\$Config\s*=\s*(\{[\s\S]*?\});/);
+                if (configMatch && configMatch[1]) {
+                    const configObject = JSON.parse(configMatch[1]);
+                    originalRequest = configObject.sCtx;
+                    flowToken = configObject.sFT;
+                    urlGetCredentialType = configObject.urlGetCredentialType;
+                    isOtherIdpSupported = true;
+                    checkPhones = true;
+                    isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
+                    isCookieBannerShown = false;
+                    isFidoSupported = true;
+                    country = configObject.country;
+                    forceotclogin = false;
+                    isExternalFederationDisallowed = false;
+                    isRemoteConnectSupported = false;
+                    isSignup = false;
+                    isAccessPassSupported = configObject.fAccessPassSupported;
+                    isQrCodePinSupported = configObject.fIsQrCodePinSupported;
+                    if (originalRequest && flowToken && urlGetCredentialType && isRemoteNGCSupported && country && isAccessPassSupported && isQrCodePinSupported)
+                        break;
+                }
+                else {
+                    console.error('Failed to extract $Config object from the script content.');
+                }
+            }
         }
-        adfsLoginPage2 = adfsLoginPage1;
-        let samlResponse = (_q = (_p = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _p === void 0 ? void 0 : _p.querySelector('input[name="SAMLResponse"]')) === null || _q === void 0 ? void 0 : _q.getAttribute('value');
-        relayState = (_s = (_r = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _r === void 0 ? void 0 : _r.querySelector('input[name="RelayState"]')) === null || _s === void 0 ? void 0 : _s.getAttribute('value');
-        if (!samlResponse || !relayState)
-            throw new Error((_v = (_u = (_t = adfsLoginPage2 === null || adfsLoginPage2 === void 0 ? void 0 : adfsLoginPage2.data) === null || _t === void 0 ? void 0 : _t.body) === null || _u === void 0 ? void 0 : _u.innerHTML) !== null && _v !== void 0 ? _v : 'No SAML Response or Relay State');
+        if (!originalRequest)
+            throw new Error('No originalRequest found in Microsoft HTML');
+        if (!flowToken)
+            throw new Error('No flowToken found in Microsoft HTML');
+        if (!urlGetCredentialType)
+            throw new Error('No urlGetCredentialType found in Microsoft HTML');
+        if (!isRemoteNGCSupported)
+            throw new Error('No isRemoteNGCSupported found in Microsoft HTML');
+        if (!country)
+            throw new Error('No country found in Microsoft HTML');
+        if (!isAccessPassSupported)
+            throw new Error('No isAccessPassSupported found in Microsoft HTML');
+        if (!isQrCodePinSupported)
+            throw new Error('No isQrCodePinSupported found in Microsoft HTML');
+        let jsonParams = {
+            username,
+            isOtherIdpSupported,
+            checkPhones,
+            isRemoteNGCSupported,
+            isCookieBannerShown,
+            isFidoSupported,
+            originalRequest,
+            country,
+            forceotclogin,
+            isExternalFederationDisallowed,
+            isRemoteConnectSupported,
+            federationFlags,
+            isSignup,
+            flowToken,
+            isAccessPassSupported,
+            isQrCodePinSupported
+        };
+        let getCredentialRedirect = yield followRedirects(yield localAxios.post(corsPrefix + urlGetCredentialType, jsonParams, {
+            responseType: 'json'
+        }), localAxios);
+        let redirectSMULoginForm = (_h = (_g = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _g === void 0 ? void 0 : _g.Credentials) === null || _h === void 0 ? void 0 : _h.FederationRedirectUrl;
+        console.log(getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data);
+        if (!redirectSMULoginForm)
+            throw new Error('No redirectSMULoginForm found');
+        //On to SMU login
         params = new URLSearchParams();
-        params.append('SAMLResponse', samlResponse);
-        params.append('RelayState', relayState);
-        let basicSearchRedirect = yield followRedirects(yield localAxios.post(corsPrefix + SMU_SHIBBOLETH_SSO_URL, params, { responseType: 'document' }), localAxios);
-        if ((_y = (_x = (_w = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _w === void 0 ? void 0 : _w.documentElement) === null || _x === void 0 ? void 0 : _x.outerHTML) === null || _y === void 0 ? void 0 : _y.includes(DUPLICATE_LOGIN)) {
+        params.append('UserName', username);
+        params.append('Password', password);
+        params.append('AuthMethod', 'FormsAuthentication');
+        let hiddenformRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + redirectSMULoginForm, params, { responseType: 'document' }), localAxios);
+        let hiddenform = (_k = (_j = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _j === void 0 ? void 0 : _j.querySelector('form[name="hiddenform"]')) === null || _k === void 0 ? void 0 : _k.getAttribute('action');
+        if (!hiddenform)
+            throw new Error('No intermediate hiddenform for SMU');
+        let wa = (_m = (_l = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _l === void 0 ? void 0 : _l.querySelector('input[name="wa"]')) === null || _m === void 0 ? void 0 : _m.getAttribute('value');
+        if (!wa)
+            throw new Error('No intermediate wa for SMU');
+        let wresult = (_p = (_o = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _o === void 0 ? void 0 : _o.querySelector('input[name="wresult"]')) === null || _p === void 0 ? void 0 : _p.getAttribute('value');
+        if (!wresult)
+            throw new Error('No intermediate wresult for SMU');
+        let wctx = (_r = (_q = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _q === void 0 ? void 0 : _q.querySelector('input[name="wctx"]')) === null || _r === void 0 ? void 0 : _r.getAttribute('value');
+        if (!wctx)
+            throw new Error('No intermediate wctx for SMU');
+        params = new URLSearchParams();
+        params.append('wa', wa);
+        params.append('wresult', wresult);
+        params.append('wctx', wctx);
+        let shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenform, params, { responseType: 'document' }), localAxios);
+        let shibbolethFormActionSMU = (_t = (_s = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _s === void 0 ? void 0 : _s.querySelector('form[name="hiddenform"][action]')) === null || _t === void 0 ? void 0 : _t.getAttribute('action');
+        if (!shibbolethFormActionSMU)
+            throw new Error('No Shibboleth form action for SMU');
+        let shibbolethSAMLResponseSMU = (_v = (_u = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _u === void 0 ? void 0 : _u.querySelector('input[name="SAMLResponse"]')) === null || _v === void 0 ? void 0 : _v.getAttribute('value');
+        if (!shibbolethSAMLResponseSMU)
+            throw new Error('No Shibboleth SAMLResponse for SMU');
+        let shibbolethRelayStateSMU = (_x = (_w = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _w === void 0 ? void 0 : _w.querySelector('input[name="RelayState"]')) === null || _x === void 0 ? void 0 : _x.getAttribute('value');
+        if (!shibbolethRelayStateSMU)
+            throw new Error('No Shibboleth RelayState for SMU');
+        params = new URLSearchParams();
+        params.append('SAMLResponse', shibbolethSAMLResponseSMU);
+        params.append('RelayState', shibbolethRelayStateSMU);
+        let basicSearchRedirect = yield followRedirects(yield localAxios.post(corsPrefix + shibbolethFormActionSMU, params, { responseType: 'document' }), localAxios);
+        if ((_0 = (_z = (_y = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _y === void 0 ? void 0 : _y.documentElement) === null || _z === void 0 ? void 0 : _z.outerHTML) === null || _0 === void 0 ? void 0 : _0.includes(DUPLICATE_LOGIN)) {
             basicSearchRedirect = yield followRedirects(yield localAxios.get(corsPrefix + exports.FIRST_URL.SMU + DUPLICATE_LOGIN_REMOVE_URL), localAxios);
             for (;;) {
-                if ((_1 = (_0 = (_z = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _z === void 0 ? void 0 : _z.documentElement) === null || _0 === void 0 ? void 0 : _0.outerHTML) === null || _1 === void 0 ? void 0 : _1.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
+                if ((_3 = (_2 = (_1 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _1 === void 0 ? void 0 : _1.documentElement) === null || _2 === void 0 ? void 0 : _2.outerHTML) === null || _3 === void 0 ? void 0 : _3.includes(exports.LOGOUT_REDIRECT_SCRIPT)) {
                     basicSearchRedirect = yield followRedirects(yield localAxios.get(corsPrefix + exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL), localAxios);
                     continue;
                 }
-                if ((_4 = (_3 = (_2 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _2 === void 0 ? void 0 : _2.documentElement) === null || _3 === void 0 ? void 0 : _3.outerHTML) === null || _4 === void 0 ? void 0 : _4.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
+                if ((_6 = (_5 = (_4 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _4 === void 0 ? void 0 : _4.documentElement) === null || _5 === void 0 ? void 0 : _5.outerHTML) === null || _6 === void 0 ? void 0 : _6.includes(exports.LOGOUT_REDIRECT_SCRIPT_2)) {
                     basicSearchRedirect = yield followRedirects(yield localAxios.get(corsPrefix + exports.FIRST_URL.SMU + exports.LOGOUT_REDIRECT_URL_2), localAxios);
                     continue;
                 }
                 break;
             }
         }
-        if ((_5 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _5 === void 0 ? void 0 : _5.querySelector('div.alert.alert-error'))
+        if ((_7 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _7 === void 0 ? void 0 : _7.querySelector('div.alert.alert-error'))
             throw new Error(basicSearchRedirect.data.querySelector('div.alert.alert-error').innerHTML);
-        if (!((_8 = (_7 = (_6 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _6 === void 0 ? void 0 : _6.querySelector('li.userInfo')) === null || _7 === void 0 ? void 0 : _7.innerHTML) === null || _8 === void 0 ? void 0 : _8.includes('<i>Welcome')))
-            throw new Error((_11 = (_10 = (_9 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _9 === void 0 ? void 0 : _9.body) === null || _10 === void 0 ? void 0 : _10.innerHTML) !== null && _11 !== void 0 ? _11 : 'Unable to reach welcome page');
+        if (!((_10 = (_9 = (_8 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _8 === void 0 ? void 0 : _8.querySelector('li.userInfo')) === null || _9 === void 0 ? void 0 : _9.innerHTML) === null || _10 === void 0 ? void 0 : _10.includes('<i>Welcome')))
+            throw new Error((_13 = (_12 = (_11 = basicSearchRedirect === null || basicSearchRedirect === void 0 ? void 0 : basicSearchRedirect.data) === null || _11 === void 0 ? void 0 : _11.body) === null || _12 === void 0 ? void 0 : _12.innerHTML) !== null && _13 !== void 0 ? _13 : 'Unable to reach welcome page');
         return localAxios;
     });
 }
+// Old SMU manual redirects
+/**let adfsLoginPage1=await followRedirects(
+    await localAxios.post<Document>(
+        corsPrefix+SMU_ADFS_LOGIN_PAGE,
+        params,
+        {responseType:'document'}
+    ),
+    localAxios
+);
+let adfsLoginPage2:AxiosResponse<Document,any>;
+while(adfsLoginPage1?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action')!==SMU_SHIBBOLETH_SSO_URL){
+    let action=adfsLoginPage1?.data?.querySelector('form#loginForm')?.getAttribute('action');
+    if(!action)throw new Error(adfsLoginPage1?.data?.body?.innerHTML);
+    let adfsLoginPageUrl2=SMU_ADFS_LOGIN_PAGE_ROOT+action;
+    params=new URLSearchParams();
+    params.append('UserName',username);
+    params.append('Password',password);
+    params.append('AuthMethod','FormsAuthentication');
+    adfsLoginPage1=await followRedirects(
+        await localAxios.post<Document>(
+            corsPrefix+adfsLoginPageUrl2,
+            params,
+            {responseType:'document'}
+        ),
+        localAxios
+    );
+    if(adfsLoginPage1?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+SMU_RESET_PASSWORD_URL+'\',\'_system\');">reset your password</a>.');;
+}
+adfsLoginPage2=adfsLoginPage1;
+let samlResponse=adfsLoginPage2?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+relayState=adfsLoginPage2?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
+if(!samlResponse||!relayState)throw new Error(adfsLoginPage2?.data?.body?.innerHTML??'No SAML Response or Relay State');
+params=new URLSearchParams();
+params.append('SAMLResponse',samlResponse);
+params.append('RelayState',relayState);
+let basicSearchRedirect=await followRedirects(
+    await localAxios.post<Document>(
+        corsPrefix+SMU_SHIBBOLETH_SSO_URL,
+        params,
+        {responseType:'document'}
+    ),
+    localAxios
+);
+**/
 function loginNUS(username, password, corsPrefix, domain, localAxios) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10;
     return __awaiter(this, void 0, void 0, function* () {
