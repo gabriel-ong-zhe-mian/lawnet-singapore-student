@@ -50,7 +50,7 @@ function followRedirects(response, localAxios, corsPrefix) {
             if (!locationCaseSensitive)
                 throw new Error('Redirect without location header');
             let location = response.headers[locationCaseSensitive];
-            if (!location.startsWith(corsPrefix))
+            if (corsPrefix && !location.startsWith(corsPrefix))
                 location = corsPrefix + location;
             response = yield localAxios.get(location, { responseType: 'document' });
         }

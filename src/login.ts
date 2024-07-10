@@ -40,7 +40,7 @@ async function followRedirects<T>(response:AxiosResponse<T>,localAxios:AxiosInst
 		}
 		if(!locationCaseSensitive)throw new Error('Redirect without location header');
 		let location=response.headers[locationCaseSensitive];
-		if(!location.startsWith(corsPrefix))location=corsPrefix+location;
+		if(corsPrefix&&!location.startsWith(corsPrefix))location=corsPrefix+location;
 		response=await localAxios.get<T>(
 			location,
 			{responseType:'document'}
@@ -61,7 +61,8 @@ async function loginSMU(
 			corsPrefix+SMU_LIBPROXY_URL,
 			{responseType:'document'}
 		),
-		localAxios
+		localAxios,
+		corsPrefix
 	);
 	let libproxyAction=libproxyPage?.data?.querySelector('form[name="EZproxyForm"]')?.getAttribute('action');
 	if(!libproxyAction)throw new Error('No EZproxyForm on SMU login page');
@@ -82,7 +83,8 @@ async function loginSMU(
 			params,
 			{responseType:'document'}
 		),
-		localAxios
+		localAxios,
+		corsPrefix
 	);
 	let hiddenformRedirectSMU:AxiosResponse<Document>;
 
@@ -181,7 +183,8 @@ async function loginSMU(
 					responseType:'json'
 				}
 			),
-			localAxios
+			localAxios,
+			corsPrefix
 		);
 		
 		let redirectSMULoginForm=getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
@@ -202,7 +205,8 @@ async function loginSMU(
 				params,
 				{responseType:'document'}
 			),
-			localAxios
+			localAxios,
+			corsPrefix
 		);
 	}else{
 		hiddenformRedirectSMU=microsoftLoginPage;
@@ -246,7 +250,8 @@ async function loginSMU(
 			params,
 			{responseType:'document'}
 		),
-		localAxios
+		localAxios,
+		corsPrefix
 	);
 
 	let shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
@@ -265,26 +270,30 @@ async function loginSMU(
 			params,
 			{responseType:'document'}
 		),
-		localAxios
+		localAxios,
+		corsPrefix
 	);
 
 	if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(DUPLICATE_LOGIN)){
 		basicSearchRedirect=await followRedirects(
 			await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+DUPLICATE_LOGIN_REMOVE_URL),
-			localAxios
+			localAxios,
+			corsPrefix
 		);
 		for(;;){
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT)){
 				basicSearchRedirect=await followRedirects(
 					await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+LOGOUT_REDIRECT_URL),
-					localAxios
+					localAxios,
+					corsPrefix
 				);
 				continue;
 			}
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT_2)){
 				basicSearchRedirect=await followRedirects(
 					await localAxios.get<Document>(corsPrefix+FIRST_URL.SMU+LOGOUT_REDIRECT_URL_2),
-					localAxios
+					localAxios,
+					corsPrefix
 				);
 				continue;
 			}
@@ -361,7 +370,8 @@ async function loginNUS(
 			params,
 			{responseType:'document'}
 		),
-		localAxios
+		localAxios,
+		corsPrefix
 	);
 	if(nusLoginPage?.data?.querySelector('div[class="resourcesAccordion"]'))return localAxios; //already authenticated
 	let samlRequest=nusLoginPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
@@ -377,7 +387,8 @@ async function loginNUS(
 			params,
 			{responseType:'document'}
 		),
-		localAxios
+		localAxios,
+		corsPrefix
 	);
 	if(nusVafsLoginPage?.data?.documentElement?.outerHTML?.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD))throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\''+NUS_HELPDESK_URL+'\',\'_system\');">contact the NUS Helpdesk</a>.');
 	let loginFormAction=nusVafsLoginPage?.data?.querySelector('form#loginForm[action]')?.getAttribute('action');
@@ -392,7 +403,8 @@ async function loginNUS(
 			params,
 			{responseType:'document'}
 		),
-		localAxios
+		localAxios,
+		corsPrefix
 	);
 	let shibbolethFormAction=shibbolethRedirect?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
 	if(!shibbolethFormAction)throw new Error('No Shibboleth form action for NUS');
@@ -409,25 +421,29 @@ async function loginNUS(
 			params,
 			{responseType:'document'}
 		),
-		localAxios
+		localAxios,
+		corsPrefix
 	);
 	if(basicSearchRedirect?.data?.documentElement?.innerHTML?.includes(DUPLICATE_LOGIN)){
 		basicSearchRedirect=await followRedirects(
 			await localAxios.get<Document>(corsPrefix+FIRST_URL.NUS+DUPLICATE_LOGIN_REMOVE_URL),
-			localAxios
+			localAxios,
+			corsPrefix
 		);
 		for(;;){
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT)){
 				basicSearchRedirect=await followRedirects(
 					await localAxios.get<Document>(corsPrefix+FIRST_URL.NUS+LOGOUT_REDIRECT_URL),
-					localAxios
+					localAxios,
+					corsPrefix
 				);
 				continue;
 			}
 			if(basicSearchRedirect?.data?.documentElement?.outerHTML?.includes(LOGOUT_REDIRECT_SCRIPT_2)){
 				basicSearchRedirect=await followRedirects(
 					await localAxios.get<Document>(corsPrefix+FIRST_URL.NUS+LOGOUT_REDIRECT_URL_2),
-					localAxios
+					localAxios,
+					corsPrefix
 				);
 				continue;
 			}
