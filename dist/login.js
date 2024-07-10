@@ -61,7 +61,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13;
     return __awaiter(this, void 0, void 0, function* () {
         let libproxyPage = yield followRedirects(yield localAxios.get(corsPrefix + SMU_LIBPROXY_URL, { responseType: 'document' }), localAxios);
-        let libproxyAction = (_b = (_a = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('form[name=EZproxyForm]')) === null || _b === void 0 ? void 0 : _b.getAttribute('action');
+        let libproxyAction = (_b = (_a = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('form[name="EZproxyForm"]')) === null || _b === void 0 ? void 0 : _b.getAttribute('action');
         if (!libproxyAction)
             throw new Error('No EZproxyForm on SMU login page');
         let samlRequest = (_d = (_c = libproxyPage === null || libproxyPage === void 0 ? void 0 : libproxyPage.data) === null || _c === void 0 ? void 0 : _c.querySelector('input[name="SAMLRequest"]')) === null || _d === void 0 ? void 0 : _d.getAttribute('value');
@@ -113,7 +113,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     checkPhones = true;
                     isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
                     isCookieBannerShown = false;
-                    isFidoSupported = true;
+                    isFidoSupported = true; //sometimes dissapears
                     country = configObject.country;
                     forceotclogin = false;
                     isExternalFederationDisallowed = false;
@@ -174,6 +174,8 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         params.append('Password', password);
         params.append('AuthMethod', 'FormsAuthentication');
         let hiddenformRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + redirectSMULoginForm, params, { responseType: 'document' }), localAxios);
+        //proxy fix starts here
+        params = new URLSearchParams();
         let hiddenform = (_k = (_j = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _j === void 0 ? void 0 : _j.querySelector('form[name="hiddenform"]')) === null || _k === void 0 ? void 0 : _k.getAttribute('action');
         if (!hiddenform)
             throw new Error('No intermediate hiddenform for SMU');
@@ -186,10 +188,23 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         let wctx = (_r = (_q = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _q === void 0 ? void 0 : _q.querySelector('input[name="wctx"]')) === null || _r === void 0 ? void 0 : _r.getAttribute('value');
         if (!wctx)
             throw new Error('No intermediate wctx for SMU');
-        params = new URLSearchParams();
         params.append('wa', wa);
         params.append('wresult', wresult);
         params.append('wctx', wctx);
+        /*
+        let hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
+        if(!hiddenform)throw new Error('No intermediate hiddenform for SMU');
+        let wa=hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
+        if(!wa)throw new Error('No intermediate wa for SMU');
+        let wresult=hiddenformRedirectSMU?.data?.querySelector('input[name="wresult"]')?.getAttribute('value');
+        if(!wresult)throw new Error('No intermediate wresult for SMU');
+        let wctx=hiddenformRedirectSMU?.data?.querySelector('input[name="wctx"]')?.getAttribute('value');
+        if(!wctx)throw new Error('No intermediate wctx for SMU');
+        params=new URLSearchParams();
+        params.append('wa', wa);
+        params.append('wresult', wresult);
+        params.append('wctx', wctx);
+        */
         let shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenform, params, { responseType: 'document' }), localAxios);
         let shibbolethFormActionSMU = (_t = (_s = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _s === void 0 ? void 0 : _s.querySelector('form[name="hiddenform"][action]')) === null || _t === void 0 ? void 0 : _t.getAttribute('action');
         if (!shibbolethFormActionSMU)

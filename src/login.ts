@@ -63,7 +63,7 @@ async function loginSMU(
 		),
 		localAxios
 	);
-	let libproxyAction=libproxyPage?.data?.querySelector('form[name=EZproxyForm]')?.getAttribute('action');
+	let libproxyAction=libproxyPage?.data?.querySelector('form[name="EZproxyForm"]')?.getAttribute('action');
 	if(!libproxyAction)throw new Error('No EZproxyForm on SMU login page');
 	let samlRequest=libproxyPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
 	if(!samlRequest)throw new Error('No SAMLRequest on SMU login page');
@@ -85,8 +85,10 @@ async function loginSMU(
 		localAxios
 	)
 
+
 	//wrong username clause to be added
 	const microsoftDocument = microsoftLoginPage?.data;
+
 	const scriptTags = microsoftDocument.querySelectorAll('script');
 	if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
 	let originalRequest='';
@@ -125,7 +127,7 @@ async function loginSMU(
 				checkPhones = true;
 				isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
 				isCookieBannerShown = false;
-				isFidoSupported = true;
+				isFidoSupported = true; //sometimes dissapears
 				country = configObject.country;
 				forceotclogin = false;
 				isExternalFederationDisallowed = false;
@@ -145,10 +147,10 @@ async function loginSMU(
 	if(!originalRequest)throw new Error('No originalRequest found in Microsoft HTML');
 	if(!flowToken)throw new Error('No flowToken found in Microsoft HTML');
 	if(!urlGetCredentialType)throw new Error('No urlGetCredentialType found in Microsoft HTML');
-	if(!isRemoteNGCSupported)throw new Error('No isRemoteNGCSupported found in Microsoft HTML')
-	if(!country)throw new Error('No country found in Microsoft HTML')
-	if(!isAccessPassSupported)throw new Error('No isAccessPassSupported found in Microsoft HTML')
-	if(!isQrCodePinSupported)throw new Error('No isQrCodePinSupported found in Microsoft HTML')
+	if(!isRemoteNGCSupported)throw new Error('No isRemoteNGCSupported found in Microsoft HTML');
+	if(!country)throw new Error('No country found in Microsoft HTML');
+	if(!isAccessPassSupported)throw new Error('No isAccessPassSupported found in Microsoft HTML');
+	if(!isQrCodePinSupported)throw new Error('No isQrCodePinSupported found in Microsoft HTML');
 
 	let jsonParams={
 		username,
@@ -169,6 +171,7 @@ async function loginSMU(
 		isQrCodePinSupported
 	};
 
+	
 	let getCredentialRedirect=await followRedirects(
 		await localAxios.post<any>(
 			corsPrefix+urlGetCredentialType,
@@ -179,11 +182,14 @@ async function loginSMU(
 		),
 		localAxios
 	);
+	
 	let redirectSMULoginForm=getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
 	console.log(getCredentialRedirect?.data);
 	if (!redirectSMULoginForm)throw new Error('No redirectSMULoginForm found');
 
+
 	//On to SMU login
+
 	params=new URLSearchParams();
 	params.append('UserName', username);
 	params.append('Password',password);
@@ -198,6 +204,10 @@ async function loginSMU(
 		localAxios
 	);
 
+	//proxy fix starts here
+
+	params=new URLSearchParams();
+
 	let hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
 	if(!hiddenform)throw new Error('No intermediate hiddenform for SMU');
 	let wa=hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
@@ -206,11 +216,25 @@ async function loginSMU(
 	if(!wresult)throw new Error('No intermediate wresult for SMU');
 	let wctx=hiddenformRedirectSMU?.data?.querySelector('input[name="wctx"]')?.getAttribute('value');
 	if(!wctx)throw new Error('No intermediate wctx for SMU');
+	params.append('wa', wa);
+	params.append('wresult', wresult);
+	params.append('wctx', wctx);
 
+
+	/*
+	let hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
+	if(!hiddenform)throw new Error('No intermediate hiddenform for SMU');
+	let wa=hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
+	if(!wa)throw new Error('No intermediate wa for SMU');
+	let wresult=hiddenformRedirectSMU?.data?.querySelector('input[name="wresult"]')?.getAttribute('value');
+	if(!wresult)throw new Error('No intermediate wresult for SMU');
+	let wctx=hiddenformRedirectSMU?.data?.querySelector('input[name="wctx"]')?.getAttribute('value');
+	if(!wctx)throw new Error('No intermediate wctx for SMU');
 	params=new URLSearchParams();
 	params.append('wa', wa);
 	params.append('wresult', wresult);
 	params.append('wctx', wctx);
+	*/
 
 	let shibbolethRedirectSMU=await followRedirects(
 		await localAxios.post<Document>(
