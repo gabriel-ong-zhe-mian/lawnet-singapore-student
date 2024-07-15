@@ -77,7 +77,7 @@ async function loginSMU(
 	let params=new URLSearchParams();
 	params.append('SAMLRequest',samlRequest);
 	params.append('RelayState',relayState);
-	params.append('back','2');
+	//params.append('back','2');
 
 	let microsoftLoginPage=await followRedirects(
 		await localAxios.post<Document>(

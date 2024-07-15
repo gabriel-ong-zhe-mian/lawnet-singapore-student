@@ -76,7 +76,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         let params = new URLSearchParams();
         params.append('SAMLRequest', samlRequest);
         params.append('RelayState', relayState);
-        params.append('back', '2');
+        //params.append('back','2');
         let microsoftLoginPage = yield followRedirects(yield localAxios.post(corsPrefix + libproxyAction, params, { responseType: 'document' }), localAxios, corsPrefix);
         let hiddenformRedirectSMU;
         if (!((_g = microsoftLoginPage === null || microsoftLoginPage === void 0 ? void 0 : microsoftLoginPage.data) === null || _g === void 0 ? void 0 : _g.querySelector('form[name="hiddenform"][action]'))) {
