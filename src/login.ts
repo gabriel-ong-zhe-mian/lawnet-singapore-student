@@ -375,6 +375,23 @@ async function loginNUS(
 	);
 	if(nusLoginPage?.data?.querySelector('div[class="resourcesAccordion"]'))return localAxios; //already authenticated
 	let samlRequest=nusLoginPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
+	if(!samlRequest){
+		if(nusLoginPage?.data?.querySelector('input[type="hidden"][name="auth"]')){
+			params=new URLSearchParams();
+			params.append('url',NUS_LAWNET_URL);
+			params.append('auth',{nusstu:'student',nusstf:'staff',nusext:'alumni'}[domain]||'student');
+			nusLoginPage=await followRedirects(
+				await localAxios.post<Document>(
+					corsPrefix+NUS_LOGIN_URL,
+					params,
+					{responseType:'document'}
+				),
+				localAxios,
+				corsPrefix
+			);
+			samlRequest=nusLoginPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
+		}
+	}
 	if(!samlRequest)throw new Error('No SAMLRequest on NUS login page');
 	let relayState=nusLoginPage?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
 	if(!relayState)throw new Error('No RelayState on NUS login page');
