@@ -20,6 +20,7 @@ const NUS_LAWNET_URL='https://www.lawnet.sg/lawnet/ip-access';
 const NUS_VAFS_LOGIN_PAGE='https://vafs.nus.edu.sg/adfs/ls/';
 const NUS_VAFS_ALTERNATE_LOGIN_PAGE='https://vafs.u.nus.edu/adfs/ls/';
 const NUS_VAFS_PREFIX='https://vafs.nus.edu.sg';
+const NUS_VAFS_ALTERNATE_PREFIX='https://vafs.u.nus.edu';
 const NUS_LAWPROXY_URL='https://www-lawnet-sg.libproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
 const NUS_IP_ACCESS_URL='http://www.lawnet.sg/lawnet/ip-access';
 const NUS_LOGIN_FORM_URL='https://proxylogin.nus.edu.sg/libproxy1/public/login_form.asp';
@@ -419,7 +420,7 @@ async function loginNUS(
 	params.append('AuthMethod','FormsAuthentication');
 	let shibbolethRedirect=await followRedirects(
 		await localAxios.post<Document>(
-			corsPrefix+NUS_VAFS_PREFIX+loginFormAction,
+			corsPrefix+(useAlternate?NUS_VAFS_ALTERNATE_PREFIX:NUS_VAFS_PREFIX)+loginFormAction,
 			params,
 			{responseType:'document'}
 		),
