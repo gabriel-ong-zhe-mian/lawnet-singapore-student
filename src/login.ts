@@ -18,6 +18,7 @@ const SMU_RESET_PASSWORD_URL='https://smu.sg/password';
 const NUS_LOGIN_URL='https://libproxy1.nus.edu.sg/login';
 const NUS_LAWNET_URL='https://www.lawnet.sg/lawnet/ip-access';
 const NUS_VAFS_LOGIN_PAGE='https://vafs.nus.edu.sg/adfs/ls/';
+const NUS_VAFS_ALTERNATE_LOGIN_PAGE='https://vafs.u.nus.edu/adfs/ls/';
 const NUS_VAFS_PREFIX='https://vafs.nus.edu.sg';
 const NUS_LAWPROXY_URL='https://www-lawnet-sg.libproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
 const NUS_IP_ACCESS_URL='http://www.lawnet.sg/lawnet/ip-access';
@@ -375,6 +376,7 @@ async function loginNUS(
 	);
 	if(nusLoginPage?.data?.querySelector('div[class="resourcesAccordion"]'))return localAxios; //already authenticated
 	let samlRequest=nusLoginPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
+	let useAlternate=false;
 	if(!samlRequest){
 		if(nusLoginPage?.data?.querySelector('input[type="hidden"][name="auth"]')){
 			params=new URLSearchParams();
@@ -390,6 +392,7 @@ async function loginNUS(
 				corsPrefix
 			);
 			samlRequest=nusLoginPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
+			if(samlRequest)useAlternate=true;
 		}
 	}
 	if(!samlRequest)throw new Error('No SAMLRequest on NUS login page');
@@ -400,7 +403,7 @@ async function loginNUS(
 	params.append('RelayState',relayState);
 	let nusVafsLoginPage=await followRedirects(
 		await localAxios.post<Document>(
-			corsPrefix+NUS_VAFS_LOGIN_PAGE,
+			useAlternate?corsPrefix+NUS_VAFS_ALTERNATE_LOGIN_PAGE:corsPrefix+NUS_VAFS_LOGIN_PAGE,
 			params,
 			{responseType:'document'}
 		),
@@ -411,7 +414,7 @@ async function loginNUS(
 	let loginFormAction=nusVafsLoginPage?.data?.querySelector('form#loginForm[action]')?.getAttribute('action');
 	if(!loginFormAction)throw new Error(nusVafsLoginPage?.data?.body?.innerHTML??'Error retrieving NUS login form');
 	params=new URLSearchParams();
-	params.append('UserName',domain+'\\'+username);
+	params.append('UserName',useAlternate?username+'@u.nus.edu':domain+'\\'+username);
 	params.append('Password',password);
 	params.append('AuthMethod','FormsAuthentication');
 	let shibbolethRedirect=await followRedirects(

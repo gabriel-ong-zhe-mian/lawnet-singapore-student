@@ -27,6 +27,7 @@ const SMU_RESET_PASSWORD_URL = 'https://smu.sg/password';
 const NUS_LOGIN_URL = 'https://libproxy1.nus.edu.sg/login';
 const NUS_LAWNET_URL = 'https://www.lawnet.sg/lawnet/ip-access';
 const NUS_VAFS_LOGIN_PAGE = 'https://vafs.nus.edu.sg/adfs/ls/';
+const NUS_VAFS_ALTERNATE_LOGIN_PAGE = 'https://vafs.u.nus.edu/adfs/ls/';
 const NUS_VAFS_PREFIX = 'https://vafs.nus.edu.sg';
 const NUS_LAWPROXY_URL = 'https://www-lawnet-sg.libproxy1.nus.edu.sg/lawnet/group/lawnet/legal-research/basic-search';
 const NUS_IP_ACCESS_URL = 'http://www.lawnet.sg/lawnet/ip-access';
@@ -300,6 +301,7 @@ function loginNUS(username, password, corsPrefix, domain, localAxios) {
         if ((_a = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _a === void 0 ? void 0 : _a.querySelector('div[class="resourcesAccordion"]'))
             return localAxios; //already authenticated
         let samlRequest = (_c = (_b = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _b === void 0 ? void 0 : _b.querySelector('input[name="SAMLRequest"]')) === null || _c === void 0 ? void 0 : _c.getAttribute('value');
+        let useAlternate = false;
         if (!samlRequest) {
             if ((_d = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _d === void 0 ? void 0 : _d.querySelector('input[type="hidden"][name="auth"]')) {
                 params = new URLSearchParams();
@@ -307,6 +309,8 @@ function loginNUS(username, password, corsPrefix, domain, localAxios) {
                 params.append('auth', { nusstu: 'student', nusstf: 'staff', nusext: 'alumni' }[domain] || 'student');
                 nusLoginPage = yield followRedirects(yield localAxios.post(corsPrefix + NUS_LOGIN_URL, params, { responseType: 'document' }), localAxios, corsPrefix);
                 samlRequest = (_f = (_e = nusLoginPage === null || nusLoginPage === void 0 ? void 0 : nusLoginPage.data) === null || _e === void 0 ? void 0 : _e.querySelector('input[name="SAMLRequest"]')) === null || _f === void 0 ? void 0 : _f.getAttribute('value');
+                if (samlRequest)
+                    useAlternate = true;
             }
         }
         if (!samlRequest)
@@ -317,14 +321,14 @@ function loginNUS(username, password, corsPrefix, domain, localAxios) {
         params = new URLSearchParams();
         params.append('SAMLRequest', samlRequest);
         params.append('RelayState', relayState);
-        let nusVafsLoginPage = yield followRedirects(yield localAxios.post(corsPrefix + NUS_VAFS_LOGIN_PAGE, params, { responseType: 'document' }), localAxios, corsPrefix);
+        let nusVafsLoginPage = yield followRedirects(yield localAxios.post(useAlternate ? corsPrefix + NUS_VAFS_ALTERNATE_LOGIN_PAGE : corsPrefix + NUS_VAFS_LOGIN_PAGE, params, { responseType: 'document' }), localAxios, corsPrefix);
         if ((_l = (_k = (_j = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _j === void 0 ? void 0 : _j.documentElement) === null || _k === void 0 ? void 0 : _k.outerHTML) === null || _l === void 0 ? void 0 : _l.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD))
             throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
         let loginFormAction = (_o = (_m = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _m === void 0 ? void 0 : _m.querySelector('form#loginForm[action]')) === null || _o === void 0 ? void 0 : _o.getAttribute('action');
         if (!loginFormAction)
             throw new Error((_r = (_q = (_p = nusVafsLoginPage === null || nusVafsLoginPage === void 0 ? void 0 : nusVafsLoginPage.data) === null || _p === void 0 ? void 0 : _p.body) === null || _q === void 0 ? void 0 : _q.innerHTML) !== null && _r !== void 0 ? _r : 'Error retrieving NUS login form');
         params = new URLSearchParams();
-        params.append('UserName', domain + '\\' + username);
+        params.append('UserName', useAlternate ? username + '@u.nus.edu' : domain + '\\' + username);
         params.append('Password', password);
         params.append('AuthMethod', 'FormsAuthentication');
         let shibbolethRedirect = yield followRedirects(yield localAxios.post(corsPrefix + NUS_VAFS_PREFIX + loginFormAction, params, { responseType: 'document' }), localAxios, corsPrefix);
