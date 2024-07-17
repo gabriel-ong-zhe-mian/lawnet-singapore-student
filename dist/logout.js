@@ -17,7 +17,7 @@ const LOGOUT_CHECK_SCRIPT = '{"isTimerStart":';
 const LOGOUT_URL = '/lawnet/c/portal/logout?referer=/lawnet/web/lawnet/home';
 function logout(args) {
     return __awaiter(this, void 0, void 0, function* () {
-        let url = LOGOUT_CHECK_URL, method = 'POST', params = LOGOUT_POST;
+        let url = login_1.FIRST_URL[args.school] + LOGOUT_CHECK_URL, method = 'POST', params = LOGOUT_POST;
         //assume that you are logged in to force a logout
         let loggedIn = true;
         while (loggedIn) {
@@ -59,7 +59,7 @@ function logout(args) {
             }
             catch (error) {
                 //break infinite loop
-                if (url === LOGOUT_CHECK_URL)
+                if (url.includes(LOGOUT_CHECK_URL))
                     url = args.corsPrefix + login_1.FIRST_URL[args.school] + LOGOUT_URL;
                 else
                     loggedIn = false; //give up

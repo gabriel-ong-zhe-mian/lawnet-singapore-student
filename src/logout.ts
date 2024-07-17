@@ -15,7 +15,7 @@ export async function logout(args:{
 	corsPrefix?:string,
 	localAxios:AxiosInstance
 }):Promise<void>{
-	let url=LOGOUT_CHECK_URL,method='POST',params=LOGOUT_POST;
+	let url=FIRST_URL[args.school]+LOGOUT_CHECK_URL,method='POST',params=LOGOUT_POST;
 	//assume that you are logged in to force a logout
 	let loggedIn=true;
 	while(loggedIn){
@@ -51,7 +51,7 @@ export async function logout(args:{
 			}
 		}catch(error){
 			//break infinite loop
-			if(url===LOGOUT_CHECK_URL)url=args.corsPrefix+FIRST_URL[args.school]+LOGOUT_URL;
+			if(url.includes(LOGOUT_CHECK_URL))url=args.corsPrefix+FIRST_URL[args.school]+LOGOUT_URL;
 			else loggedIn=false; //give up
 		}
 	}
