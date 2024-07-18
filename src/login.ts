@@ -248,7 +248,6 @@ async function loginSMU(
 	if(!wctx)throw new Error('No intermediate wctx for SMU');
 	params.append('wa', wa);
 	params.append('wresult', wresult);
-	if(!wctx.includes('LoginOptions'))wctx='LoginOptions=3&'+wctx;
 	params.append('wctx', wctx);
 
 
@@ -307,7 +306,7 @@ async function loginSMU(
 			if(!configObject)throw new Error('Failed to extract $Config object from the script content.')
 
 			if(!shibbolethFormActionSMU){
-				let hiddenformHost=hiddenform.substring(0,hiddenform.indexOf('/',hiddenform.indexOf('://')+3));
+				let hiddenformHost='https://login.libproxy.smu.edu.sg/';//hiddenform.substring(0,hiddenform.indexOf('/',hiddenform.indexOf('://')+3));
 				params=new URLSearchParams();
 				console.log(configObject);
 				if(!configObject.oPostParams)throw new Error('No oPostParams in $Config');
