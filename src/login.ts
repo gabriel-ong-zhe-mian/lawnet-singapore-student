@@ -278,7 +278,8 @@ async function loginSMU(
 
 
 	let shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
-	
+	let shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+	let shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
 
 	if(!shibbolethFormActionSMU){
 
@@ -303,7 +304,11 @@ async function loginSMU(
 				}
 			}
 
-			if(!configObject)throw new Error('Failed to extract $Config object from the script content.')
+			if(!configObject){
+				shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+				shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
+				if(!shibbolethSAMLResponseSMU||!shibbolethRelayStateSMU)throw new Error('Failed to extract $Config object from the script content.');
+			}
 
 			if(!shibbolethFormActionSMU){
 				let hiddenformHost='https://login.libproxy.smu.edu.sg/';//hiddenform.substring(0,hiddenform.indexOf('/',hiddenform.indexOf('://')+3));
@@ -325,12 +330,14 @@ async function loginSMU(
 				);
 			}
 			shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
+			shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+			shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
+			if(!shibbolethFormActionSMU&&shibbolethSAMLResponseSMU&&shibbolethRelayStateSMU)shibbolethFormActionSMU='https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
 		}while(!shibbolethFormActionSMU);
 
 	}
-	let shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+
 	if(!shibbolethSAMLResponseSMU)throw new Error('No Shibboleth SAMLResponse for SMU');
-	let shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
 	if(!shibbolethRelayStateSMU)throw new Error('No Shibboleth RelayState for SMU');
 
 	params=new URLSearchParams();
