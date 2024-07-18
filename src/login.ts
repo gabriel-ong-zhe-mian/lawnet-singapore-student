@@ -109,7 +109,7 @@ async function loginSMU(
 		let isAccessPassSupported: boolean;
 		let isQrCodePinSupported: boolean;
 
-		do{
+		do{	
 			const microsoftDocument = microsoftLoginPage?.data;
 
 			const scriptTags = microsoftDocument.querySelectorAll('script');
@@ -276,8 +276,58 @@ async function loginSMU(
 		corsPrefix
 	);
 
+
 	let shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
-	if(!shibbolethFormActionSMU)throw new Error('No Shibboleth form action for SMU');
+	
+
+	if(!shibbolethFormActionSMU){
+
+		do{	
+			const microsoftDocument = shibbolethRedirectSMU?.data;
+
+			const scriptTags = microsoftDocument.querySelectorAll('script');
+			if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
+			let configObject:any;
+			for(let scriptTag of scriptTags){
+				if (!scriptTag.textContent) continue;
+
+				//Declaring variables for extracting out of Script and Config
+
+				if (scriptTag && scriptTag.textContent) {
+					const scriptContent = scriptTag.textContent;
+					const configMatch = scriptContent.match(/\$Config\s*=\s*(\{[\s\S]*?\});/);
+
+					if (configMatch && configMatch[1]) {
+						configObject = JSON.parse(configMatch[1]);
+					}
+				}
+			}
+
+			if(!configObject)throw new Error('Failed to extract $Config object from the script content.')
+
+			if(!shibbolethFormActionSMU){
+				let hiddenformHost=hiddenform.substring(0,hiddenform.indexOf('/',hiddenform.indexOf('://')+3));
+				params=new URLSearchParams();
+				console.log(configObject);
+				if(!configObject.oPostParams)throw new Error('No oPostParams in $Config');
+				for(let i in configObject.oPostParams){
+					params.append(i,configObject.oPostParams[i]);
+				}
+				if(!configObject.urlPost)throw new Error('No urlPost in $Config');
+				shibbolethRedirectSMU=await followRedirects(
+					await localAxios.post<Document>(
+						corsPrefix+hiddenformHost+configObject.urlPost,
+						params,
+						{responseType:'document'}
+					),
+					localAxios,
+					corsPrefix
+				);
+			}
+			shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
+		}while(!shibbolethRedirectSMU);
+
+	}
 	let shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
 	if(!shibbolethSAMLResponseSMU)throw new Error('No Shibboleth SAMLResponse for SMU');
 	let shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
