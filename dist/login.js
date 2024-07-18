@@ -250,7 +250,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     }
                 }
                 if (!configObject) {
-                    shibbolethSAMLResponseSMU = (_0 = (_z = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _z === void 0 ? void 0 : _z.querySelector('input[name="SAMLResponse"]')) === null || _0 === void 0 ? void 0 : _0.getAttribute('value');
+                    shibbolethSAMLResponseSMU = (_0 = (_z = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _z === void 0 ? void 0 : _z.querySelector('input[name="SAMLRequest"]')) === null || _0 === void 0 ? void 0 : _0.getAttribute('value');
                     shibbolethRelayStateSMU = (_2 = (_1 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _1 === void 0 ? void 0 : _1.querySelector('input[name="RelayState"]')) === null || _2 === void 0 ? void 0 : _2.getAttribute('value');
                     if (!shibbolethSAMLResponseSMU || !shibbolethRelayStateSMU)
                         throw new Error('Failed to extract $Config object from the script content.');
@@ -269,7 +269,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenformHost + configObject.urlPost, params, { responseType: 'document' }), localAxios, corsPrefix);
                 }
                 shibbolethFormActionSMU = (_4 = (_3 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _3 === void 0 ? void 0 : _3.querySelector('form[name="hiddenform"][action]')) === null || _4 === void 0 ? void 0 : _4.getAttribute('action');
-                shibbolethSAMLResponseSMU = (_6 = (_5 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _5 === void 0 ? void 0 : _5.querySelector('input[name="SAMLResponse"]')) === null || _6 === void 0 ? void 0 : _6.getAttribute('value');
+                shibbolethSAMLResponseSMU = (_6 = (_5 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _5 === void 0 ? void 0 : _5.querySelector('input[name="SAMLRequest"]')) === null || _6 === void 0 ? void 0 : _6.getAttribute('value');
                 shibbolethRelayStateSMU = (_8 = (_7 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _7 === void 0 ? void 0 : _7.querySelector('input[name="RelayState"]')) === null || _8 === void 0 ? void 0 : _8.getAttribute('value');
                 if (!shibbolethFormActionSMU && shibbolethSAMLResponseSMU && shibbolethRelayStateSMU)
                     shibbolethFormActionSMU = 'https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';

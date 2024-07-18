@@ -305,7 +305,7 @@ async function loginSMU(
 			}
 
 			if(!configObject){
-				shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+				shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
 				shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
 				if(!shibbolethSAMLResponseSMU||!shibbolethRelayStateSMU)throw new Error('Failed to extract $Config object from the script content.');
 			}
@@ -330,7 +330,7 @@ async function loginSMU(
 				);
 			}
 			shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
-			shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
+			shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
 			shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
 			if(!shibbolethFormActionSMU&&shibbolethSAMLResponseSMU&&shibbolethRelayStateSMU)shibbolethFormActionSMU='https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
 		}while(!shibbolethFormActionSMU);
