@@ -263,7 +263,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenformHost + configObject.urlPost, params, { responseType: 'document' }), localAxios, corsPrefix);
                 }
                 shibbolethFormActionSMU = (_w = (_v = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _v === void 0 ? void 0 : _v.querySelector('form[name="hiddenform"][action]')) === null || _w === void 0 ? void 0 : _w.getAttribute('action');
-            } while (!shibbolethRedirectSMU);
+            } while (!shibbolethFormActionSMU);
         }
         let shibbolethSAMLResponseSMU = (_y = (_x = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _x === void 0 ? void 0 : _x.querySelector('input[name="SAMLResponse"]')) === null || _y === void 0 ? void 0 : _y.getAttribute('value');
         if (!shibbolethSAMLResponseSMU)

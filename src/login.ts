@@ -325,7 +325,7 @@ async function loginSMU(
 				);
 			}
 			shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
-		}while(!shibbolethRedirectSMU);
+		}while(!shibbolethFormActionSMU);
 
 	}
 	let shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
