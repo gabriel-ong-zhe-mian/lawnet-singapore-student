@@ -81,10 +81,6 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         let hiddenformRedirectSMU;
         if (!((_g = microsoftLoginPage === null || microsoftLoginPage === void 0 ? void 0 : microsoftLoginPage.data) === null || _g === void 0 ? void 0 : _g.querySelector('form[name="hiddenform"][action]'))) {
             //wrong username clause to be added
-            const microsoftDocument = microsoftLoginPage === null || microsoftLoginPage === void 0 ? void 0 : microsoftLoginPage.data;
-            const scriptTags = microsoftDocument.querySelectorAll('script');
-            if (!scriptTags || scriptTags.length <= 0)
-                throw new Error('No Script tag found in Microsoft HTML');
             let originalRequest = '';
             let flowToken = '';
             let urlGetCredentialType = '';
@@ -102,11 +98,15 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
             let isAccessPassSupported;
             let isQrCodePinSupported;
             do {
+                const microsoftDocument = microsoftLoginPage === null || microsoftLoginPage === void 0 ? void 0 : microsoftLoginPage.data;
+                const scriptTags = microsoftDocument.querySelectorAll('script');
+                if (!scriptTags || scriptTags.length <= 0)
+                    throw new Error('No Script tag found in Microsoft HTML');
                 let configObject;
                 for (let scriptTag of scriptTags) {
                     if (!scriptTag.textContent)
                         continue;
-                    //Declaring variables for extracting out of Script and Config 
+                    //Declaring variables for extracting out of Script and Config
                     if (scriptTag && scriptTag.textContent) {
                         const scriptContent = scriptTag.textContent;
                         const configMatch = scriptContent.match(/\$Config\s*=\s*(\{[\s\S]*?\});/);
@@ -130,11 +130,10 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                             if (originalRequest && flowToken && urlGetCredentialType && isRemoteNGCSupported && country && isAccessPassSupported && isQrCodePinSupported)
                                 break;
                         }
-                        else {
-                            throw new Error('Failed to extract $Config object from the script content.');
-                        }
                     }
                 }
+                if (!configObject)
+                    throw new Error('Failed to extract $Config object from the script content.');
                 if (!originalRequest) {
                     let libproxyActionHost = libproxyAction.substring(0, libproxyAction.indexOf('/', libproxyAction.indexOf('://') + 3));
                     params = new URLSearchParams();

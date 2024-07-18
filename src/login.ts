@@ -92,10 +92,6 @@ async function loginSMU(
 
 	if(!microsoftLoginPage?.data?.querySelector('form[name="hiddenform"][action]')){
 		//wrong username clause to be added
-		const microsoftDocument = microsoftLoginPage?.data;
-
-		const scriptTags = microsoftDocument.querySelectorAll('script');
-		if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
 		let originalRequest='';
 		let flowToken='';
 		let urlGetCredentialType='';
@@ -112,15 +108,17 @@ async function loginSMU(
 		let isSignup: boolean;
 		let isAccessPassSupported: boolean;
 		let isQrCodePinSupported: boolean;
-		
 
 		do{
-			
+			const microsoftDocument = microsoftLoginPage?.data;
+
+			const scriptTags = microsoftDocument.querySelectorAll('script');
+			if(!scriptTags||scriptTags.length<=0)throw new Error('No Script tag found in Microsoft HTML');
 			let configObject:any;
 			for(let scriptTag of scriptTags){
 				if (!scriptTag.textContent) continue;
 
-				//Declaring variables for extracting out of Script and Config 
+				//Declaring variables for extracting out of Script and Config
 
 				if (scriptTag && scriptTag.textContent) {
 					const scriptContent = scriptTag.textContent;
@@ -146,11 +144,11 @@ async function loginSMU(
 
 
 						if(originalRequest&&flowToken&&urlGetCredentialType&&isRemoteNGCSupported&&country&&isAccessPassSupported&&isQrCodePinSupported)break;
-					} else {
-						throw new Error('Failed to extract $Config object from the script content.')
 					}
 				}
 			}
+
+			if(!configObject)throw new Error('Failed to extract $Config object from the script content.')
 
 			if(!originalRequest){
 				let libproxyActionHost=libproxyAction.substring(0,libproxyAction.indexOf('/',libproxyAction.indexOf('://')+3));
