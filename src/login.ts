@@ -112,44 +112,66 @@ async function loginSMU(
 		let isSignup: boolean;
 		let isAccessPassSupported: boolean;
 		let isQrCodePinSupported: boolean;
+		
+
+		do{
+			
+			let configObject:any;
+			for(let scriptTag of scriptTags){
+				if (!scriptTag.textContent) continue;
+
+				//Declaring variables for extracting out of Script and Config 
+
+				if (scriptTag && scriptTag.textContent) {
+					const scriptContent = scriptTag.textContent;
+					const configMatch = scriptContent.match(/\$Config\s*=\s*(\{[\s\S]*?\});/);
+
+					if (configMatch && configMatch[1]) {
+						configObject = JSON.parse(configMatch[1]);
+						originalRequest = configObject.sCtx;
+						flowToken = configObject.sFT;
+						urlGetCredentialType = configObject.urlGetCredentialType;
+						isOtherIdpSupported = true;
+						checkPhones = true;
+						isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
+						isCookieBannerShown = false;
+						isFidoSupported = true; //sometimes dissapears
+						country = configObject.country;
+						forceotclogin = false;
+						isExternalFederationDisallowed = false;
+						isRemoteConnectSupported = false;
+						isSignup = false;
+						isAccessPassSupported = configObject.fAccessPassSupported;
+						isQrCodePinSupported = configObject.fIsQrCodePinSupported;
 
 
-		for(let scriptTag of scriptTags){
-			if (!scriptTag.textContent) continue;
-
-			//Declaring variables for extracting out of Script and Config 
-
-			if (scriptTag && scriptTag.textContent) {
-				const scriptContent = scriptTag.textContent;
-				const configMatch = scriptContent.match(/\$Config\s*=\s*(\{[\s\S]*?\});/);
-
-				if (configMatch && configMatch[1]) {
-					const configObject = JSON.parse(configMatch[1]);
-					originalRequest = configObject.sCtx;
-					flowToken = configObject.sFT;
-					urlGetCredentialType = configObject.urlGetCredentialType;
-					isOtherIdpSupported = true;
-					checkPhones = true;
-					isRemoteNGCSupported = configObject.fIsRemoteNGCSupported;
-					isCookieBannerShown = false;
-					isFidoSupported = true; //sometimes dissapears
-					country = configObject.country;
-					forceotclogin = false;
-					isExternalFederationDisallowed = false;
-					isRemoteConnectSupported = false;
-					isSignup = false;
-					isAccessPassSupported = configObject.fAccessPassSupported;
-					isQrCodePinSupported = configObject.fIsQrCodePinSupported;
-
-
-					if(originalRequest&&flowToken&&urlGetCredentialType&&isRemoteNGCSupported&&country&&isAccessPassSupported&&isQrCodePinSupported)break;
-				} else {
-					console.error('Failed to extract $Config object from the script content.')
+						if(originalRequest&&flowToken&&urlGetCredentialType&&isRemoteNGCSupported&&country&&isAccessPassSupported&&isQrCodePinSupported)break;
+					} else {
+						throw new Error('Failed to extract $Config object from the script content.')
+					}
 				}
 			}
-		}
 
-		if(!originalRequest)throw new Error('No originalRequest found in Microsoft HTML');
+			if(!originalRequest){
+				let libproxyActionHost=libproxyAction.substring(0,libproxyAction.indexOf('/',libproxyAction.indexOf('://')+3));
+				params=new URLSearchParams();
+				console.log(configObject);
+				if(!configObject.oPostParams)throw new Error('No oPostParams in $Config');
+				for(let i in configObject.oPostParams){
+					params.append(i,configObject.oPostParams[i]);
+				}
+				if(!configObject.urlPost)throw new Error('No urlPost in $Config');
+				microsoftLoginPage=await followRedirects(
+					await localAxios.post<Document>(
+						corsPrefix+libproxyActionHost+configObject.urlPost,
+						params,
+						{responseType:'document'}
+					),
+					localAxios,
+					corsPrefix
+				);
+			}
+		}while(!originalRequest);
 		if(!flowToken)throw new Error('No flowToken found in Microsoft HTML');
 		if(!urlGetCredentialType)throw new Error('No urlGetCredentialType found in Microsoft HTML');
 		if(!isRemoteNGCSupported)throw new Error('No isRemoteNGCSupported found in Microsoft HTML');
