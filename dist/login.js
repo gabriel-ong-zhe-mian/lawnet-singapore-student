@@ -211,6 +211,8 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
             throw new Error('No intermediate wctx for SMU');
         params.append('wa', wa);
         params.append('wresult', wresult);
+        if (!wctx.includes('LoginOptions'))
+            wctx = 'LoginOptions=3&' + wctx;
         params.append('wctx', wctx);
         /*
         let hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');

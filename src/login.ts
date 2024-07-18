@@ -248,6 +248,7 @@ async function loginSMU(
 	if(!wctx)throw new Error('No intermediate wctx for SMU');
 	params.append('wa', wa);
 	params.append('wresult', wresult);
+	if(!wctx.includes('LoginOptions'))wctx='LoginOptions=3&'+wctx;
 	params.append('wctx', wctx);
 
 
