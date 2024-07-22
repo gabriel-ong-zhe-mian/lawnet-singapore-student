@@ -140,6 +140,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     console.log(configObject);
                     if (!configObject.oPostParams)
                         throw new Error('No oPostParams in $Config');
+                    console.log('past 1');
                     for (let i in configObject.oPostParams) {
                         params.append(i, configObject.oPostParams[i]);
                     }
@@ -261,6 +262,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     console.log(configObject);
                     if (!configObject.oPostParams)
                         throw new Error('No oPostParams in $Config');
+                    console.log('past 2');
                     for (let i in configObject.oPostParams) {
                         params.append(i, configObject.oPostParams[i]);
                     }

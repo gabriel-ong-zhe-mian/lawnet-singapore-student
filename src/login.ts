@@ -155,6 +155,7 @@ async function loginSMU(
 				params=new URLSearchParams();
 				console.log(configObject);
 				if(!configObject.oPostParams)throw new Error('No oPostParams in $Config');
+				console.log('past 1');
 				for(let i in configObject.oPostParams){
 					params.append(i,configObject.oPostParams[i]);
 				}
@@ -315,6 +316,7 @@ async function loginSMU(
 				params=new URLSearchParams();
 				console.log(configObject);
 				if(!configObject.oPostParams)throw new Error('No oPostParams in $Config');
+				console.log('past 2');
 				for(let i in configObject.oPostParams){
 					params.append(i,configObject.oPostParams[i]);
 				}
