@@ -138,6 +138,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     let libproxyActionHost = libproxyAction.substring(0, libproxyAction.indexOf('/', libproxyAction.indexOf('://') + 3));
                     params = new URLSearchParams();
                     console.log(configObject);
+                    console.log('bef 1');
                     if (!configObject.oPostParams)
                         throw new Error('No oPostParams in $Config');
                     console.log('past 1');
@@ -260,6 +261,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     let hiddenformHost = 'https://login.libproxy.smu.edu.sg/'; //hiddenform.substring(0,hiddenform.indexOf('/',hiddenform.indexOf('://')+3));
                     params = new URLSearchParams();
                     console.log(configObject);
+                    console.log('past 1');
                     if (!configObject.oPostParams)
                         throw new Error('No oPostParams in $Config');
                     console.log('past 2');
