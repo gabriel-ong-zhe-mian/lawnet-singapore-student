@@ -355,10 +355,14 @@ async function loginSMU(
 			shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
 			console.log('action:' + shibbolethFormActionSMU);
 			shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
+			console.log('SAML:' + shibbolethSAMLResponseSMU);
 			shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
-			if(!shibbolethFormActionSMU&&shibbolethSAMLResponseSMU&&shibbolethRelayStateSMU)shibbolethFormActionSMU='https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
+			console.log('RelayState:' + shibbolethRelayStateSMU);
+			if(!shibbolethFormActionSMU&&shibbolethSAMLResponseSMU&&shibbolethRelayStateSMU){
+				console.log('Force rouing shibbolethFormAction to https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST');
+				shibbolethFormActionSMU='https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
+			}
 		}while(!shibbolethFormActionSMU);
-
 	}
 
 	if(!shibbolethSAMLResponseSMU)throw new Error('No Shibboleth SAMLResponse for SMU');
