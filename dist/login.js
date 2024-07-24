@@ -276,12 +276,13 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     }
                     if (configObject.urlResume) {
                         let urlResume = configObject.urlResume;
-                        shibbolethRedirectSMU = yield followRedirects(yield localAxios.get(corsPrefix + urlResume), localAxios, corsPrefix);
-                        console.log('Url:' + configObject.urlResume);
-                        console.log(shibbolethRedirectSMU);
+                        shibbolethRedirectSMU = yield followRedirects(yield localAxios.get(corsPrefix + urlResume, { responseType: 'document' }), localAxios, corsPrefix);
+                        console.log('urlResume:' + configObject.urlResume);
+                        console.log('Final page:' + shibbolethRedirectSMU);
                     }
                 }
                 shibbolethFormActionSMU = (_4 = (_3 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _3 === void 0 ? void 0 : _3.querySelector('form[name="hiddenform"][action]')) === null || _4 === void 0 ? void 0 : _4.getAttribute('action');
+                console.log('action:' + shibbolethFormActionSMU);
                 shibbolethSAMLResponseSMU = (_6 = (_5 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _5 === void 0 ? void 0 : _5.querySelector('input[name="SAMLRequest"]')) === null || _6 === void 0 ? void 0 : _6.getAttribute('value');
                 shibbolethRelayStateSMU = (_8 = (_7 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _7 === void 0 ? void 0 : _7.querySelector('input[name="RelayState"]')) === null || _8 === void 0 ? void 0 : _8.getAttribute('value');
                 if (!shibbolethFormActionSMU && shibbolethSAMLResponseSMU && shibbolethRelayStateSMU)

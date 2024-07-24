@@ -318,6 +318,7 @@ async function loginSMU(
 				console.log(configObject);
 				console.log('bef 2');
 				console.log('resume:' + configObject.urlResume);
+
 				if(!configObject.oPostParams && !configObject.urlResume)throw new Error('No oPostParams or urlResume in $Config');
 				console.log('past 2');
 					if(configObject.oPostParams){
@@ -336,21 +337,23 @@ async function loginSMU(
 					);
 				}
 
-				if(configObject.urlResume){
-					let urlResume = configObject.urlResume;
-					shibbolethRedirectSMU=await followRedirects(
-						await localAxios.get<Document>(
-							corsPrefix+urlResume
-						),
-						localAxios,
-						corsPrefix
-					);
-					console.log('Url:' + configObject.urlResume);
-					console.log(shibbolethRedirectSMU);
+					if(configObject.urlResume){
+						let urlResume = configObject.urlResume;
+						shibbolethRedirectSMU=await followRedirects(
+							await localAxios.get<Document>(
+								corsPrefix+urlResume,
+								{responseType:'document'}
+							),
+							localAxios,
+							corsPrefix
+						);
+						console.log('urlResume:' + configObject.urlResume);
+						console.log('Final page:' + shibbolethRedirectSMU);
 
-				}
+					}
 			}
 			shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
+			console.log('action:' + shibbolethFormActionSMU);
 			shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
 			shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
 			if(!shibbolethFormActionSMU&&shibbolethSAMLResponseSMU&&shibbolethRelayStateSMU)shibbolethFormActionSMU='https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
