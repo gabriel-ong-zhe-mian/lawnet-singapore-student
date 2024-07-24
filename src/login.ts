@@ -317,22 +317,39 @@ async function loginSMU(
 				params=new URLSearchParams();
 				console.log(configObject);
 				console.log('bef 2');
-				console.log('resume:' + configObject.urlResume)
-				if(!configObject.oPostParams && !configObject.urlResume)throw new Error('No oPostParams in $Config');
+				console.log('resume:' + configObject.urlResume);
+				if(!configObject.oPostParams && !configObject.urlResume)throw new Error('No oPostParams or urlResume in $Config');
 				console.log('past 2');
-				for(let i in configObject.oPostParams){
-					params.append(i,configObject.oPostParams[i]);
+					if(configObject.oPostParams){
+					for(let i in configObject.oPostParams){
+						params.append(i,configObject.oPostParams[i]);
+					}
+					if(!configObject.urlPost)throw new Error('No urlPost in $Config');
+					shibbolethRedirectSMU=await followRedirects(
+						await localAxios.post<Document>(
+							corsPrefix+hiddenformHost+configObject.urlPost,
+							params,
+							{responseType:'document'}
+						),
+						localAxios,
+						corsPrefix
+					);
 				}
-				if(!configObject.urlPost)throw new Error('No urlPost in $Config');
-				shibbolethRedirectSMU=await followRedirects(
-					await localAxios.post<Document>(
-						corsPrefix+hiddenformHost+configObject.urlPost,
-						params,
-						{responseType:'document'}
-					),
-					localAxios,
-					corsPrefix
-				);
+
+				if(configObject.urlResume){
+					let urlResume = configObject.urlResume;
+					shibbolethRedirectSMU=await followRedirects(
+						await localAxios.post<Document>(
+							corsPrefix+hiddenformHost+urlResume,
+							params,
+							{responseType:'document'}
+						),
+						localAxios,
+						corsPrefix
+					);
+					console.log('Extracted urlResume');
+
+				}
 			}
 			shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
 			shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');

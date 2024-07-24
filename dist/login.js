@@ -264,14 +264,21 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     console.log('bef 2');
                     console.log('resume:' + configObject.urlResume);
                     if (!configObject.oPostParams && !configObject.urlResume)
-                        throw new Error('No oPostParams in $Config');
+                        throw new Error('No oPostParams or urlResume in $Config');
                     console.log('past 2');
-                    for (let i in configObject.oPostParams) {
-                        params.append(i, configObject.oPostParams[i]);
+                    if (configObject.oPostParams) {
+                        for (let i in configObject.oPostParams) {
+                            params.append(i, configObject.oPostParams[i]);
+                        }
+                        if (!configObject.urlPost)
+                            throw new Error('No urlPost in $Config');
+                        shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenformHost + configObject.urlPost, params, { responseType: 'document' }), localAxios, corsPrefix);
                     }
-                    if (!configObject.urlPost)
-                        throw new Error('No urlPost in $Config');
-                    shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenformHost + configObject.urlPost, params, { responseType: 'document' }), localAxios, corsPrefix);
+                    if (configObject.urlResume) {
+                        let urlResume = configObject.urlResume;
+                        shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenformHost + urlResume, params, { responseType: 'document' }), localAxios, corsPrefix);
+                        console.log('Extracted urlResume');
+                    }
                 }
                 shibbolethFormActionSMU = (_4 = (_3 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _3 === void 0 ? void 0 : _3.querySelector('form[name="hiddenform"][action]')) === null || _4 === void 0 ? void 0 : _4.getAttribute('action');
                 shibbolethSAMLResponseSMU = (_6 = (_5 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _5 === void 0 ? void 0 : _5.querySelector('input[name="SAMLRequest"]')) === null || _6 === void 0 ? void 0 : _6.getAttribute('value');
