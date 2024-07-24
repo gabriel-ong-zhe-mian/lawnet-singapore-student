@@ -137,11 +137,8 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                 if (!originalRequest) {
                     let libproxyActionHost = libproxyAction.substring(0, libproxyAction.indexOf('/', libproxyAction.indexOf('://') + 3));
                     params = new URLSearchParams();
-                    console.log(configObject);
-                    console.log('bef 1');
                     if (!configObject.oPostParams)
                         throw new Error('No oPostParams in $Config');
-                    console.log('past 1');
                     for (let i in configObject.oPostParams) {
                         params.append(i, configObject.oPostParams[i]);
                     }
@@ -184,7 +181,6 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                 responseType: 'json'
             }), localAxios, corsPrefix);
             let redirectSMULoginForm = (_j = (_h = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _h === void 0 ? void 0 : _h.Credentials) === null || _j === void 0 ? void 0 : _j.FederationRedirectUrl;
-            console.log(getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data);
             if (!redirectSMULoginForm)
                 throw new Error('No redirectSMULoginForm found');
             //On to SMU login
@@ -214,20 +210,6 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         params.append('wa', wa);
         params.append('wresult', wresult);
         params.append('wctx', wctx);
-        /*
-        let hiddenform=hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
-        if(!hiddenform)throw new Error('No intermediate hiddenform for SMU');
-        let wa=hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
-        if(!wa)throw new Error('No intermediate wa for SMU');
-        let wresult=hiddenformRedirectSMU?.data?.querySelector('input[name="wresult"]')?.getAttribute('value');
-        if(!wresult)throw new Error('No intermediate wresult for SMU');
-        let wctx=hiddenformRedirectSMU?.data?.querySelector('input[name="wctx"]')?.getAttribute('value');
-        if(!wctx)throw new Error('No intermediate wctx for SMU');
-        params=new URLSearchParams();
-        params.append('wa', wa);
-        params.append('wresult', wresult);
-        params.append('wctx', wctx);
-        */
         let shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenform, params, { responseType: 'document' }), localAxios, corsPrefix);
         let shibbolethFormActionSMU = (_u = (_t = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _t === void 0 ? void 0 : _t.querySelector('form[name="hiddenform"][action]')) === null || _u === void 0 ? void 0 : _u.getAttribute('action');
         let shibbolethSAMLResponseSMU = (_w = (_v = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _v === void 0 ? void 0 : _v.querySelector('input[name="SAMLResponse"]')) === null || _w === void 0 ? void 0 : _w.getAttribute('value');
@@ -260,12 +242,8 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                 if (!shibbolethFormActionSMU) {
                     let hiddenformHost = 'https://login.libproxy.smu.edu.sg/'; //hiddenform.substring(0,hiddenform.indexOf('/',hiddenform.indexOf('://')+3));
                     params = new URLSearchParams();
-                    console.log(configObject);
-                    console.log('bef 2');
-                    console.log('resume:' + configObject.urlResume);
                     if (!configObject.oPostParams && !configObject.urlResume)
                         throw new Error('No oPostParams or urlResume in $Config');
-                    console.log('past 2');
                     if (configObject.oPostParams) {
                         for (let i in configObject.oPostParams) {
                             params.append(i, configObject.oPostParams[i]);
@@ -277,16 +255,11 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     if (configObject.urlResume) {
                         let urlResume = configObject.urlResume;
                         shibbolethRedirectSMU = yield followRedirects(yield localAxios.get(corsPrefix + urlResume, { responseType: 'document' }), localAxios, corsPrefix);
-                        console.log('urlResume:' + configObject.urlResume);
-                        console.log('Final page:' + shibbolethRedirectSMU);
                     }
                 }
                 shibbolethFormActionSMU = (_4 = (_3 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _3 === void 0 ? void 0 : _3.querySelector('form[name="hiddenform"][action]')) === null || _4 === void 0 ? void 0 : _4.getAttribute('action');
-                console.log('action:' + shibbolethFormActionSMU);
                 shibbolethSAMLResponseSMU = (_6 = (_5 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _5 === void 0 ? void 0 : _5.querySelector('input[name="SAMLResponse"]')) === null || _6 === void 0 ? void 0 : _6.getAttribute('value');
-                console.log('SAML:' + shibbolethSAMLResponseSMU);
                 shibbolethRelayStateSMU = (_8 = (_7 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _7 === void 0 ? void 0 : _7.querySelector('input[name="RelayState"]')) === null || _8 === void 0 ? void 0 : _8.getAttribute('value');
-                console.log('RelayState:' + shibbolethRelayStateSMU);
                 if (!shibbolethFormActionSMU && shibbolethSAMLResponseSMU && shibbolethRelayStateSMU) {
                     console.log('Force rouing shibbolethFormAction to https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST');
                     shibbolethFormActionSMU = 'https://login.libproxy.smu.edu.sg/Shibboleth.sso/SAML2/POST';
