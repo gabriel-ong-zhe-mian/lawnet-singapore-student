@@ -283,7 +283,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                 }
                 shibbolethFormActionSMU = (_4 = (_3 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _3 === void 0 ? void 0 : _3.querySelector('form[name="hiddenform"][action]')) === null || _4 === void 0 ? void 0 : _4.getAttribute('action');
                 console.log('action:' + shibbolethFormActionSMU);
-                shibbolethSAMLResponseSMU = (_6 = (_5 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _5 === void 0 ? void 0 : _5.querySelector('input[name="SAMLRequest"]')) === null || _6 === void 0 ? void 0 : _6.getAttribute('value');
+                shibbolethSAMLResponseSMU = (_6 = (_5 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _5 === void 0 ? void 0 : _5.querySelector('input[name="SAMLResponse"]')) === null || _6 === void 0 ? void 0 : _6.getAttribute('value');
                 console.log('SAML:' + shibbolethSAMLResponseSMU);
                 shibbolethRelayStateSMU = (_8 = (_7 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _7 === void 0 ? void 0 : _7.querySelector('input[name="RelayState"]')) === null || _8 === void 0 ? void 0 : _8.getAttribute('value');
                 console.log('RelayState:' + shibbolethRelayStateSMU);

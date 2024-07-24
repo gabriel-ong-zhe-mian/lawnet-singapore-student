@@ -354,7 +354,7 @@ async function loginSMU(
 			}
 			shibbolethFormActionSMU=shibbolethRedirectSMU?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
 			console.log('action:' + shibbolethFormActionSMU);
-			shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
+			shibbolethSAMLResponseSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
 			console.log('SAML:' + shibbolethSAMLResponseSMU);
 			shibbolethRelayStateSMU=shibbolethRedirectSMU?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
 			console.log('RelayState:' + shibbolethRelayStateSMU);
