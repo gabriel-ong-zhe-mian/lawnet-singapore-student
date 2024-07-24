@@ -339,15 +339,14 @@ async function loginSMU(
 				if(configObject.urlResume){
 					let urlResume = configObject.urlResume;
 					shibbolethRedirectSMU=await followRedirects(
-						await localAxios.post<Document>(
-							corsPrefix+hiddenformHost+urlResume,
-							params,
-							{responseType:'document'}
+						await localAxios.get<Document>(
+							corsPrefix+urlResume
 						),
 						localAxios,
 						corsPrefix
 					);
-					console.log('Extracted urlResume');
+					console.log('Url:' + configObject.urlResume);
+					console.log(shibbolethRedirectSMU);
 
 				}
 			}

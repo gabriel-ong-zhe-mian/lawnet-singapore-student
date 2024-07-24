@@ -276,8 +276,9 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                     }
                     if (configObject.urlResume) {
                         let urlResume = configObject.urlResume;
-                        shibbolethRedirectSMU = yield followRedirects(yield localAxios.post(corsPrefix + hiddenformHost + urlResume, params, { responseType: 'document' }), localAxios, corsPrefix);
-                        console.log('Extracted urlResume');
+                        shibbolethRedirectSMU = yield followRedirects(yield localAxios.get(corsPrefix + urlResume), localAxios, corsPrefix);
+                        console.log('Url:' + configObject.urlResume);
+                        console.log(shibbolethRedirectSMU);
                     }
                 }
                 shibbolethFormActionSMU = (_4 = (_3 = shibbolethRedirectSMU === null || shibbolethRedirectSMU === void 0 ? void 0 : shibbolethRedirectSMU.data) === null || _3 === void 0 ? void 0 : _3.querySelector('form[name="hiddenform"][action]')) === null || _4 === void 0 ? void 0 : _4.getAttribute('action');
