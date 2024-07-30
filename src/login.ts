@@ -2,7 +2,6 @@ import axios, {
 	AxiosInstance,
 	AxiosResponse
 } from 'axios';
-import { JSDOM } from 'jsdom';
 
 export const FIRST_URL = {
 	SMU: 'https://www-lawnet-sg.libproxy.smu.edu.sg',
