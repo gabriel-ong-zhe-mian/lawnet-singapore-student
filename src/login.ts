@@ -236,7 +236,7 @@ async function loginSMU(
 	//proxy fix starts here
 
 	params = new URLSearchParams();
-
+	if (hiddenformRedirectSMU?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD)) throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset password here</a>.');
 	let hiddenform = hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
 	if (!hiddenform) throw new Error('No intermediate hiddenform for SMU');
 	let wa = hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
@@ -511,7 +511,7 @@ async function loginNUS(
 	console.log('outer shibboleth');
 	console.log(shibbolethRedirect?.data.documentElement.outerHTML);
 	if (shibbolethRedirect?.data?.documentElement?.outerHTML?.includes(NUS_OTHER_INCORRECT_USER_ID_OR_PASSWORD)) throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
-	
+
 	let shibbolethFormAction = shibbolethRedirect?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
 	if (!shibbolethFormAction) throw new Error('No Shibboleth form action for NUS');
 	let shibbolethSAMLResponse = shibbolethRedirect?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
