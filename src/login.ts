@@ -210,6 +210,11 @@ async function loginSMU(
 		);
 
 		let redirectSMULoginForm = getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
+		console.log('raw data');
+		console.log(getCredentialRedirect.data);
+		console.log('html');
+		console.log(getCredentialRedirect.data.innerHTML);
+
 		if (!redirectSMULoginForm) throw new Error('No redirectSMULoginForm found');
 
 

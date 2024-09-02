@@ -182,6 +182,10 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                 responseType: 'json'
             }), localAxios, corsPrefix);
             let redirectSMULoginForm = (_j = (_h = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _h === void 0 ? void 0 : _h.Credentials) === null || _j === void 0 ? void 0 : _j.FederationRedirectUrl;
+            console.log('raw data');
+            console.log(getCredentialRedirect.data);
+            console.log('html');
+            console.log(getCredentialRedirect.data.innerHTML);
             if (!redirectSMULoginForm)
                 throw new Error('No redirectSMULoginForm found');
             //On to SMU login
