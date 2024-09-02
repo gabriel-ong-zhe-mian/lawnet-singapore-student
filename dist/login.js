@@ -383,6 +383,10 @@ function loginNUS(username, password, corsPrefix, domain, localAxios) {
         params.append('Password', password);
         params.append('AuthMethod', 'FormsAuthentication');
         let shibbolethRedirect = yield followRedirects(yield localAxios.post(corsPrefix + (useAlternate ? NUS_VAFS_ALTERNATE_PREFIX : NUS_VAFS_PREFIX) + loginFormAction, params, { responseType: 'document' }), localAxios, corsPrefix);
+        console.log('inner shibboleth');
+        console.log(shibbolethRedirect === null || shibbolethRedirect === void 0 ? void 0 : shibbolethRedirect.data.documentElement.innerHTML);
+        console.log('outer shibboleth');
+        console.log(shibbolethRedirect === null || shibbolethRedirect === void 0 ? void 0 : shibbolethRedirect.data.documentElement.outerHTML);
         let shibbolethFormAction = (_w = (_v = shibbolethRedirect === null || shibbolethRedirect === void 0 ? void 0 : shibbolethRedirect.data) === null || _v === void 0 ? void 0 : _v.querySelector('form[name="hiddenform"][action]')) === null || _w === void 0 ? void 0 : _w.getAttribute('action');
         if (!shibbolethFormAction)
             throw new Error('No Shibboleth form action for NUS');

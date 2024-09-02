@@ -505,6 +505,12 @@ async function loginNUS(
 		localAxios,
 		corsPrefix
 	);
+	
+	console.log('inner shibboleth');
+	console.log(shibbolethRedirect?.data.documentElement.innerHTML);
+	console.log('outer shibboleth');
+	console.log(shibbolethRedirect?.data.documentElement.outerHTML);
+
 	let shibbolethFormAction = shibbolethRedirect?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');
 	if (!shibbolethFormAction) throw new Error('No Shibboleth form action for NUS');
 	let shibbolethSAMLResponse = shibbolethRedirect?.data?.querySelector('input[name="SAMLResponse"]')?.getAttribute('value');
