@@ -210,7 +210,7 @@ async function loginSMU(
 		);
 
 		let redirectSMULoginForm = getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
-
+		//FederationRedirectUrl will be inside GetCredentialType if microsoft email is correct
 		if (!redirectSMULoginForm) throw new Error('Incorrect email, please try again.');
 
 
@@ -507,10 +507,6 @@ async function loginNUS(
 		corsPrefix
 	);
 
-	console.log('inner shibboleth');
-	console.log(shibbolethRedirect?.data.documentElement.innerHTML);
-	console.log('outer shibboleth');
-	console.log(shibbolethRedirect?.data.documentElement.outerHTML);
 	if (shibbolethRedirect?.data?.documentElement?.outerHTML?.includes(NUS_OTHER_INCORRECT_USER_ID_OR_PASSWORD)) throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
 
 	let shibbolethFormAction = shibbolethRedirect?.data?.querySelector('form[name="hiddenform"][action]')?.getAttribute('action');

@@ -182,6 +182,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                 responseType: 'json'
             }), localAxios, corsPrefix);
             let redirectSMULoginForm = (_j = (_h = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _h === void 0 ? void 0 : _h.Credentials) === null || _j === void 0 ? void 0 : _j.FederationRedirectUrl;
+            //FederationRedirectUrl will be inside GetCredentialType if microsoft email is correct
             if (!redirectSMULoginForm)
                 throw new Error('Incorrect email, please try again.');
             //On to SMU login
@@ -385,10 +386,6 @@ function loginNUS(username, password, corsPrefix, domain, localAxios) {
         params.append('Password', password);
         params.append('AuthMethod', 'FormsAuthentication');
         let shibbolethRedirect = yield followRedirects(yield localAxios.post(corsPrefix + (useAlternate ? NUS_VAFS_ALTERNATE_PREFIX : NUS_VAFS_PREFIX) + loginFormAction, params, { responseType: 'document' }), localAxios, corsPrefix);
-        console.log('inner shibboleth');
-        console.log(shibbolethRedirect === null || shibbolethRedirect === void 0 ? void 0 : shibbolethRedirect.data.documentElement.innerHTML);
-        console.log('outer shibboleth');
-        console.log(shibbolethRedirect === null || shibbolethRedirect === void 0 ? void 0 : shibbolethRedirect.data.documentElement.outerHTML);
         if ((_x = (_w = (_v = shibbolethRedirect === null || shibbolethRedirect === void 0 ? void 0 : shibbolethRedirect.data) === null || _v === void 0 ? void 0 : _v.documentElement) === null || _w === void 0 ? void 0 : _w.outerHTML) === null || _x === void 0 ? void 0 : _x.includes(NUS_OTHER_INCORRECT_USER_ID_OR_PASSWORD))
             throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
         let shibbolethFormAction = (_z = (_y = shibbolethRedirect === null || shibbolethRedirect === void 0 ? void 0 : shibbolethRedirect.data) === null || _y === void 0 ? void 0 : _y.querySelector('form[name="hiddenform"][action]')) === null || _z === void 0 ? void 0 : _z.getAttribute('action');
