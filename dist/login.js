@@ -182,12 +182,8 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
                 responseType: 'json'
             }), localAxios, corsPrefix);
             let redirectSMULoginForm = (_j = (_h = getCredentialRedirect === null || getCredentialRedirect === void 0 ? void 0 : getCredentialRedirect.data) === null || _h === void 0 ? void 0 : _h.Credentials) === null || _j === void 0 ? void 0 : _j.FederationRedirectUrl;
-            console.log('raw data');
-            console.log(getCredentialRedirect.data);
-            console.log('html');
-            console.log(getCredentialRedirect.data.innerHTML);
             if (!redirectSMULoginForm)
-                throw new Error('No redirectSMULoginForm found');
+                throw new Error('Incorrect email, please try again.');
             //On to SMU login
             params = new URLSearchParams();
             params.append('UserName', username);
@@ -201,7 +197,7 @@ function loginSMU(username, password, corsPrefix, domain, localAxios) {
         //proxy fix starts here
         params = new URLSearchParams();
         if ((_m = (_l = (_k = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _k === void 0 ? void 0 : _k.documentElement) === null || _l === void 0 ? void 0 : _l.outerHTML) === null || _m === void 0 ? void 0 : _m.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD))
-            throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset password here</a>.');
+            throw new Error('Incorrect password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset password here</a>.');
         let hiddenform = (_p = (_o = hiddenformRedirectSMU === null || hiddenformRedirectSMU === void 0 ? void 0 : hiddenformRedirectSMU.data) === null || _o === void 0 ? void 0 : _o.querySelector('form[name="hiddenform"]')) === null || _p === void 0 ? void 0 : _p.getAttribute('action');
         if (!hiddenform)
             throw new Error('No intermediate hiddenform for SMU');
