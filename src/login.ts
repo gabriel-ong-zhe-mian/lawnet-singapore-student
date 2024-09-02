@@ -25,6 +25,7 @@ const NUS_LAWPROXY_URL = 'https://www-lawnet-sg.libproxy1.nus.edu.sg/lawnet/grou
 const NUS_IP_ACCESS_URL = 'http://www.lawnet.sg/lawnet/ip-access';
 const NUS_LOGIN_FORM_URL = 'https://proxylogin.nus.edu.sg/libproxy1/public/login_form.asp';
 const NUS_INCORRECT_USER_ID_OR_PASSWORD = 'We are unable to authenticate the Userid and password that was entered. The Domain, NUSNET ID or the password entered could be invalid / mistyped.';
+const NUS_OTHER_INCORRECT_USER_ID_OR_PASSWORD = 'Incorrect user ID or password. Type the correct user ID and password, and try again.';
 const NUS_HELPDESK_URL = 'http://www.nus.edu.sg/comcen/gethelp';
 
 const DUPLICATE_LOGIN = '<div>Multiple logins with the same User ID are not allowed.</div> <div>To terminate the earlier session, please click on the Remove Button.</div> <div><br><br></div> <div>Sharing of User ID is prohibited. Legal action will be taken if access is unauthorised.</div>';
@@ -488,6 +489,7 @@ async function loginNUS(
 		corsPrefix
 	);
 	if (nusVafsLoginPage?.data?.documentElement?.outerHTML?.includes(NUS_INCORRECT_USER_ID_OR_PASSWORD)) throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
+	if (nusVafsLoginPage?.data?.documentElement?.outerHTML?.includes(NUS_OTHER_INCORRECT_USER_ID_OR_PASSWORD)) throw new Error('Incorrect username or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + NUS_HELPDESK_URL + '\',\'_system\');">contact the NUS Helpdesk</a>.');
 	let loginFormAction = nusVafsLoginPage?.data?.querySelector('form#loginForm[action]')?.getAttribute('action');
 	if (!loginFormAction) throw new Error(nusVafsLoginPage?.data?.body?.innerHTML ?? 'Error retrieving NUS login form');
 	params = new URLSearchParams();
