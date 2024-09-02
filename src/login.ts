@@ -211,7 +211,7 @@ async function loginSMU(
 
 		let redirectSMULoginForm = getCredentialRedirect?.data?.Credentials?.FederationRedirectUrl;
 		//FederationRedirectUrl will be inside GetCredentialType if microsoft email is correct
-		if (!redirectSMULoginForm) throw new Error('Incorrect email, please try again.');
+		if (!redirectSMULoginForm) throw new Error('Invalid email, please try again.');
 
 
 		//On to SMU login
@@ -237,7 +237,7 @@ async function loginSMU(
 	//proxy fix starts here
 
 	params = new URLSearchParams();
-	if (hiddenformRedirectSMU?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD)) throw new Error('Incorrect password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset password here</a>.');
+	if (hiddenformRedirectSMU?.data?.documentElement?.outerHTML?.includes(SMU_INCORRECT_USER_ID_OR_PASSWORD)) throw new Error('Invalid email or password. Too many wrong attempts will result in your account being locked. If in doubt, <a href="javascript:window.open(\'' + SMU_RESET_PASSWORD_URL + '\',\'_system\');">reset password here</a>.');
 	let hiddenform = hiddenformRedirectSMU?.data?.querySelector('form[name="hiddenform"]')?.getAttribute('action');
 	if (!hiddenform) throw new Error('No intermediate hiddenform for SMU');
 	let wa = hiddenformRedirectSMU?.data?.querySelector('input[name="wa"]')?.getAttribute('value');
