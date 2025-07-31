@@ -66,8 +66,19 @@ async function loginSMU(
 		localAxios,
 		corsPrefix
 	);
+
+	// EDIT: added this short circuit to prevent relogin attempt
+	if (libproxyPage?.data?.querySelector('li.userInfo')?.innerHTML.includes('Welcome User IP Access')) { 
+		console.log(libproxyPage?.data?.documentElement?.outerHTML);
+		console.log('User already logged in')
+		return localAxios;
+	} 
+
 	let libproxyAction = libproxyPage?.data?.querySelector('form[name="EZproxyForm"]')?.getAttribute('action');
-	if (!libproxyAction) throw new Error('No EZproxyForm on SMU login page');
+	if (!libproxyAction){
+		console.log(libproxyPage?.data?.documentElement?.outerHTML);
+		throw new Error('No EZproxyForm on SMU login page');
+	}
 	let samlRequest = libproxyPage?.data?.querySelector('input[name="SAMLRequest"]')?.getAttribute('value');
 	if (!samlRequest) throw new Error('No SAMLRequest on SMU login page');
 	let relayState = libproxyPage?.data?.querySelector('input[name="RelayState"]')?.getAttribute('value');
